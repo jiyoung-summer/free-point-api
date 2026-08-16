@@ -29,7 +29,7 @@ java -jar build/libs/free-point-api-0.0.1-SNAPSHOT.jar
 | OpenAPI 스펙(JSON) | `http://localhost:8080/v3/api-docs` |
 | H2 콘솔 | `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:pointdb;MODE=MySQL`, user: `sa`, password 없음) |
 
-기동 시 `PointPolicyInitializer`가 정책 테이블이 비어 있으면 기본 정책 1건을 자동으로 시딩한다 (1회 적립 1~100,000 / 개인별 최대 보유 1,000,000 / 만료일 1~1,824일(5년 미만) / 기본 만료 365일). 이후 정책 변경은 코드 재배포가 아니라 이 테이블에 새 버전 행을 추가하는 방식으로 이뤄진다(현재 별도 정책 변경 API는 없음 — "남은 과제" 참고).
+기동 시 `PointPolicyInitializer`가 정책 테이블이 비어 있으면 기본 정책 1건을 자동으로 시딩한다 (1회 적립 1–100,000 / 개인별 최대 보유 1,000,000 / 만료일 1–1,824일(5년 미만) / 기본 만료 365일). 이후 정책 변경은 코드 재배포가 아니라 이 테이블에 새 버전 행을 추가하는 방식으로 이뤄진다(현재 별도 정책 변경 API는 없음 — "남은 과제" 참고).
 
 ### 테스트
 
@@ -47,11 +47,11 @@ java -jar build/libs/free-point-api-0.0.1-SNAPSHOT.jar
 | `PageableSupportTest` | `size` 상한 clamp, `page`/`sort`는 그대로 유지 |
 | `PointControllerPaginationTest` | HTTP 레벨 `size` 상한 clamp, 음수 `page` 방어, 화이트리스트 밖 정렬 필드 400 |
 | `PointControllerExplicitPageSizeCapTest` | 전역 설정과 무관하게 컨트롤러 명시 상한이 독립적으로 적용되는지 |
-| `PointServiceScenarioTest` | 요구사항 예시 시나리오(A~E) 전체 재현, 조회 응답의 `usable`/`expired` 필드, 만료된 미사용 적립의 취소 거절 |
+| `PointServiceScenarioTest` | 요구사항 예시 시나리오(A–E) 전체 재현, 조회 응답의 `usable`/`expired` 필드, 만료된 미사용 적립의 취소 거절 |
 | `PointServiceConcurrentAccessTest` | 동시 적립/사용에서 lost update 없음, 잔액을 초과하는 동시 사용 요청이 몰려도 감당 가능한 건수만 성공 |
 | `PointServiceUseCancelConcurrencyTest` | 같은 사용 거래에 부분 사용취소가 동시에 몰려도 취소 가능 금액을 넘지 않음 |
 | `PointLotUsableConditionTest` | `USABLE_CONDITION`이 빠지면 즉시 실패하는 회귀 테스트 |
-| `PointAccountProvisionerConcurrencyTest` | 계정이 없는 사용자에게 최초 적립이 2~10건 동시에 들어와도 계정 1개, 정확한 lot 수/잔액 |
+| `PointAccountProvisionerConcurrencyTest` | 계정이 없는 사용자에게 최초 적립이 2–10건 동시에 들어와도 계정 1개, 정확한 lot 수/잔액 |
 | `PointControllerValidationTest` | HTTP 레벨 검증/에러 응답(적립 금액 0/음수, 빈 주문번호, 404, 파라미터 누락/타입 불일치, JSON 파싱 실패 500, 헬스 체크), `earn`/`earn cancel`/`use`/`use cancel` 4개 엔드포인트의 성공 응답 |
 | `PointServiceIdempotencyTest` | `Idempotency-Key` 재시도 캐시, 키는 같고 내용이 다른 요청의 `IDEMPOTENCY_KEY_REUSED` 거절, 키 값 검증(공백/200자 초과/제어 문자), 동시 요청 시 정확히 1건만 처리 |
 | `PointServiceIdempotencyRollbackTest` | 멱등 응답 저장(직렬화)이 실패하면 같은 트랜잭션의 lot/거래 생성까지 전부 롤백되는지, 재시도 시 저장된 응답 복원(역직렬화)이 실패하면 비즈니스 로직 재실행 없이 잔액에 흔적을 남기지 않는지, 둘 다 `IDEMPOTENCY_CODEC_FAILED`로 구분되는지 |
@@ -112,7 +112,7 @@ curl -s -X POST $BASE/points/earn -H 'Content-Type: application/json' -H 'Idempo
   -d '{"userId":1,"amount":1000}'
 ```
 
-### 요청 예시 — 요구사항 예시(A~E) 그대로 재현
+### 요청 예시 — 요구사항 예시(A–E) 그대로 재현
 
 ```bash
 BASE=http://localhost:8080/api/v1
@@ -190,11 +190,11 @@ SELECT COALESCE(SUM(remaining_amount), 0) FROM point_lot
 
 | 요구사항 | 구현 위치 |
 |---|---|
-| 1회 1~100,000 적립, 하드코딩 금지 | `point_policy` 테이블(`PointPolicy`), 기동 시 시드 후 정책 행 추가로 런타임 변경 |
+| 1회 1–100,000 적립, 하드코딩 금지 | `point_policy` 테이블(`PointPolicy`), 기동 시 시드 후 정책 행 추가로 런타임 변경 |
 | 개인별 최대 보유 한도, 하드코딩 금지 | `PointPolicy.validateHoldLimit()` — 적립 시 `현재잔액 + 적립액 > 한도`면 거절 |
 | 1원 단위 사용처 추적 | `PointUseDetail`(사용거래 × 적립분), 사용 응답의 `allocations` |
 | 수기지급 구분 | `PointLot.EarnSource.MANUAL` + 전용 엔드포인트 `/admin/points/manual-earn` (회원용 API에서는 source 조작 불가) |
-| 만료일 1일~5년 미만(기본 365일) | `PointPolicy.resolveExpireDays()`가 요청을, `PointPolicy.create()`가 정책 자체(상한 1,824일)를 검증 — 시드 정책 값 1~1,824일 |
+| 만료일 1일–5년 미만(기본 365일) | `PointPolicy.resolveExpireDays()`가 요청을, `PointPolicy.create()`가 정책 자체(상한 1,824일)를 검증 — 시드 정책 값 1–1,824일 |
 | 적립취소: 일부 사용 시 불가 | `PointLot.cancelEarn()` — `remainingAmount != amount`면 `PARTIALLY_USED_LOT_CANNOT_BE_CANCELED` |
 | 적립취소: **만료된 적립은 불가**(가정) | `PointLot.cancelEarn()` — `isExpired(now)`면 한 번도 안 썼어도(`remainingAmount == amount`) `POINT_LOT_NOT_USABLE`. 요구사항에 명시되지 않아 내린 가정: 무상 포인트는 만료되면 소멸하므로, 이미 소멸된 적립분은 "취소"할 대상 자체가 없다고 봤다 |
 | 사용: 주문 시에만, 주문번호 기록 | `UseRequest.orderNo`(필수), `PointUseDetail.orderNo` |
