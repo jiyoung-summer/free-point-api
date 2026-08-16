@@ -1,0 +1,311 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1330" viewBox="0 0 1500 1330" role="img">
+<title>Free Point System — ERD (Core)</title><desc>적립금 시스템 ERD</desc>
+<rect width="1500" height="1330" fill="#fff"/>
+<text x="40" y="62" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="30" font-weight="500" fill="#22303f">Free Point System — ERD (Core)</text>
+<text x="40" y="92" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" fill="#8b95a3">Musinsa Payments  |  H2 / MySQL compatible  |  amounts are BIGINT (1 KRW unit)  |  핵심 7 테이블</text>
+<path d="M420 201.0 L460 201.0 L460 261.0 L500 261.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="420" cy="201.0" r="3.5" fill="#5f6f80"/>
+<circle cx="500" cy="261.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M420 401.0 L445 401.0 L445 801.0 L500 801.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="420" cy="401.0" r="3.5" fill="#5f6f80"/>
+<circle cx="500" cy="801.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M500 201.0 L470 201.0 L470 771.0 L500 771.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="500" cy="201.0" r="3.5" fill="#5f6f80"/>
+<circle cx="500" cy="771.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M930 201.0 L965 201.0 L965 231.0 L1000 231.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="930" cy="201.0" r="3.5" fill="#5f6f80"/>
+<circle cx="1000" cy="231.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M930 681.0 L955 681.0 L955 261.0 L1000 261.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="930" cy="681.0" r="3.5" fill="#5f6f80"/>
+<circle cx="1000" cy="261.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M930 201.0 L975 201.0 L975 711.0 L1000 711.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="930" cy="201.0" r="3.5" fill="#5f6f80"/>
+<circle cx="1000" cy="711.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M1000 201.0 L985 201.0 L985 741.0 L1000 741.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="1000" cy="201.0" r="3.5" fill="#5f6f80"/>
+<circle cx="1000" cy="741.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<path d="M930 681.0 L945 681.0 L945 771.0 L1000 771.0" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-linejoin="round" opacity="0.85"/>
+<circle cx="930" cy="681.0" r="3.5" fill="#5f6f80"/>
+<circle cx="1000" cy="771.0" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<rect x="40" y="140" width="380" height="136" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M40 148 a8 8 0 0 1 8 -8 h364 a8 8 0 0 1 8 8 v38 h-380 z" fill="#2d3a4d"/>
+<text x="56" y="169.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">point_account</text>
+<rect x="40" y="186" width="380" height="30" fill="#f3f6f8"/>
+<text x="56" y="206.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="96" y="206.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="404" y="206.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="216" width="380" height="30" fill="#ffffff"/>
+<text x="56" y="236.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">UK</text>
+<text x="96" y="236.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">user_id</text>
+<text x="404" y="236.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<path d="M40 246 h380 v22 a8 8 0 0 1 -8 8 h-364 a8 8 0 0 1 -8 -8 z" fill="#f3f6f8"/>
+<text x="96" y="266.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="404" y="266.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="40" y="140" width="380" height="136" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="42" y="300" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* 잔액 변경의 비관적 락(FOR UPDATE) 기준점</text>
+<text x="42" y="320" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* balance 컬럼 미보유 = lot 합계</text>
+<rect x="40" y="340" width="380" height="406" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M40 348 a8 8 0 0 1 8 -8 h364 a8 8 0 0 1 8 8 v38 h-380 z" fill="#2d3a4d"/>
+<text x="56" y="369.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">point_policy</text>
+<rect x="40" y="386" width="380" height="30" fill="#f3f6f8"/>
+<text x="56" y="406.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="96" y="406.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="404" y="406.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="416" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="436.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">version_label</text>
+<text x="404" y="436.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(100)</text>
+<rect x="40" y="446" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="466.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">min_earn_amount</text>
+<text x="404" y="466.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="476" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="496.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">max_earn_amount</text>
+<text x="404" y="496.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="506" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="526.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">max_hold_amount</text>
+<text x="404" y="526.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="536" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="556.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">default_expire_days</text>
+<text x="404" y="556.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">INT</text>
+<rect x="40" y="566" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="586.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">min_expire_days</text>
+<text x="404" y="586.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">INT</text>
+<rect x="40" y="596" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="616.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">max_expire_days</text>
+<text x="404" y="616.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">INT</text>
+<rect x="40" y="626" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="646.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">applied_from</text>
+<text x="404" y="646.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="40" y="656" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="676.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">changed_by</text>
+<text x="404" y="676.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(100)</text>
+<rect x="40" y="686" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="706.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">change_reason</text>
+<text x="404" y="706.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(500)</text>
+<path d="M40 716 h380 v22 a8 8 0 0 1 -8 8 h-364 a8 8 0 0 1 -8 -8 z" fill="#ffffff"/>
+<text x="96" y="736.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="404" y="736.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="40" y="340" width="380" height="406" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="42" y="770" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* 정책 버전 원장 (append-only, UPDATE 금지)</text>
+<text x="42" y="790" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* 유효 정책 = applied_from &lt;= now 중 최신 1건</text>
+<rect x="40" y="800" width="380" height="256" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M40 808 a8 8 0 0 1 8 -8 h364 a8 8 0 0 1 8 8 v38 h-380 z" fill="#2d3a4d"/>
+<text x="56" y="829.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">idempotency_key</text>
+<rect x="40" y="846" width="380" height="30" fill="#f3f6f8"/>
+<text x="56" y="866.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="96" y="866.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="404" y="866.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="876" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="896.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">user_id</text>
+<text x="404" y="896.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="40" y="906" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="926.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">operation_type</text>
+<text x="404" y="926.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(30)</text>
+<rect x="40" y="936" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="956.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">idempotency_key</text>
+<text x="404" y="956.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(200)</text>
+<rect x="40" y="966" width="380" height="30" fill="#f3f6f8"/>
+<text x="96" y="986.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">request_hash</text>
+<text x="404" y="986.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(64)</text>
+<rect x="40" y="996" width="380" height="30" fill="#ffffff"/>
+<text x="96" y="1016.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">response_body</text>
+<text x="404" y="1016.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">TEXT</text>
+<path d="M40 1026 h380 v22 a8 8 0 0 1 -8 8 h-364 a8 8 0 0 1 -8 -8 z" fill="#f3f6f8"/>
+<text x="96" y="1046.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="404" y="1046.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="40" y="800" width="380" height="256" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="42" y="1080" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* UK(user_id, operation_type, idempotency_key)</text>
+<text x="42" y="1100" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* request_hash = SHA-256(요청 지문) — 같은 키의 내용 오용 탐지</text>
+<text x="42" y="1120" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* point_account 락 획득 "이후"에 조회 — 동시 재시도도 안전</text>
+<rect x="500" y="140" width="430" height="346" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M500 148 a8 8 0 0 1 8 -8 h414 a8 8 0 0 1 8 8 v38 h-430 z" fill="#2d3a4d"/>
+<text x="516" y="169.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">point_transaction</text>
+<rect x="500" y="186" width="430" height="30" fill="#f3f6f8"/>
+<text x="516" y="206.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="556" y="206.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="914" y="206.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="216" width="430" height="30" fill="#ffffff"/>
+<text x="516" y="236.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">UK</text>
+<text x="556" y="236.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">point_key</text>
+<text x="914" y="236.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(40)</text>
+<rect x="500" y="246" width="430" height="30" fill="#f3f6f8"/>
+<text x="516" y="266.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="556" y="266.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">account_id</text>
+<text x="914" y="266.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="276" width="430" height="30" fill="#ffffff"/>
+<text x="556" y="296.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">user_id</text>
+<text x="914" y="296.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="306" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="326.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">transaction_type</text>
+<text x="914" y="326.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(20)</text>
+<rect x="500" y="336" width="430" height="30" fill="#ffffff"/>
+<text x="556" y="356.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">amount</text>
+<text x="914" y="356.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="366" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="386.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">order_no</text>
+<text x="914" y="386.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(50)</text>
+<rect x="500" y="396" width="430" height="30" fill="#ffffff"/>
+<text x="516" y="416.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="556" y="416.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">related_transaction_id</text>
+<text x="914" y="416.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="426" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="446.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">display_code</text>
+<text x="914" y="446.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(30)</text>
+<path d="M500 456 h430 v22 a8 8 0 0 1 -8 8 h-414 a8 8 0 0 1 -8 -8 z" fill="#ffffff"/>
+<text x="556" y="476.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="914" y="476.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="500" y="140" width="430" height="346" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="502" y="510" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* EARN / EARN_CANCEL / USE / USE_CANCEL 원장</text>
+<text x="502" y="530" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* point_key = 서버 발급 UUID (결과 중복 방지)</text>
+<text x="502" y="550" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">  요청 재시도 식별은 idempotency_key 가 담당 (좌측 하단)</text>
+<text x="502" y="570" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* user_id 는 조회용 비정규화, 정규 관계는 account_id</text>
+<text x="502" y="590" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* display_code : 문구는 메시지 번들 조회 (행 크기 최소화)</text>
+<text x="502" y="610" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* 운영 사유는 확장의 admin_audit_log 가 단독 책임</text>
+<rect x="500" y="620" width="430" height="466" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M500 628 a8 8 0 0 1 8 -8 h414 a8 8 0 0 1 8 8 v38 h-430 z" fill="#2d3a4d"/>
+<text x="516" y="649.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">point_lot</text>
+<rect x="500" y="666" width="430" height="30" fill="#f3f6f8"/>
+<text x="516" y="686.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="556" y="686.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="914" y="686.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="696" width="430" height="30" fill="#ffffff"/>
+<text x="556" y="716.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">point_key</text>
+<text x="914" y="716.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(40)</text>
+<rect x="500" y="726" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="746.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">user_id</text>
+<text x="914" y="746.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="756" width="430" height="30" fill="#ffffff"/>
+<text x="516" y="776.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">UK</text>
+<text x="556" y="776.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">earn_transaction_id</text>
+<text x="914" y="776.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="786" width="430" height="30" fill="#f3f6f8"/>
+<text x="516" y="806.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="556" y="806.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">policy_id</text>
+<text x="914" y="806.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="816" width="430" height="30" fill="#ffffff"/>
+<text x="556" y="836.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">earn_source</text>
+<text x="914" y="836.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(30)</text>
+<rect x="500" y="846" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="866.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">use_priority</text>
+<text x="914" y="866.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">INT</text>
+<rect x="500" y="876" width="430" height="30" fill="#ffffff"/>
+<text x="516" y="896.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="556" y="896.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">origin_lot_id</text>
+<text x="914" y="896.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="906" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="926.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">amount</text>
+<text x="914" y="926.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="936" width="430" height="30" fill="#ffffff"/>
+<text x="556" y="956.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">remaining_amount</text>
+<text x="914" y="956.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="500" y="966" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="986.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">expire_at</text>
+<text x="914" y="986.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="500" y="996" width="430" height="30" fill="#ffffff"/>
+<text x="556" y="1016.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">status</text>
+<text x="914" y="1016.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(20)</text>
+<rect x="500" y="1026" width="430" height="30" fill="#f3f6f8"/>
+<text x="556" y="1046.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="914" y="1046.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<path d="M500 1056 h430 v22 a8 8 0 0 1 -8 8 h-414 a8 8 0 0 1 -8 -8 z" fill="#ffffff"/>
+<text x="556" y="1076.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">updated_at</text>
+<text x="914" y="1076.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="500" y="620" width="430" height="466" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="502" y="1110" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* 적립 단위(Lot). EARN 1건 = 1행</text>
+<text x="502" y="1130" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* earn_source : ORDER/EVENT/MANUAL/COMPENSATION</text>
+<text x="502" y="1150" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* use_priority : earn_source 매핑값 (수기 우선)</text>
+<text x="502" y="1170" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* origin_lot_id : 만료 재적립 시 원본 Lot</text>
+<text x="502" y="1190" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* status : ACTIVE / EXPIRED / CANCELED</text>
+<rect x="1000" y="140" width="440" height="316" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M1000 148 a8 8 0 0 1 8 -8 h424 a8 8 0 0 1 8 8 v38 h-440 z" fill="#2d3a4d"/>
+<text x="1016" y="169.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">point_use_detail</text>
+<rect x="1000" y="186" width="440" height="30" fill="#f3f6f8"/>
+<text x="1016" y="206.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="1056" y="206.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="1424" y="206.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="216" width="440" height="30" fill="#ffffff"/>
+<text x="1016" y="236.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="1056" y="236.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">use_transaction_id</text>
+<text x="1424" y="236.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="246" width="440" height="30" fill="#f3f6f8"/>
+<text x="1016" y="266.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="1056" y="266.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">point_lot_id</text>
+<text x="1424" y="266.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="276" width="440" height="30" fill="#ffffff"/>
+<text x="1056" y="296.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">user_id</text>
+<text x="1424" y="296.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="306" width="440" height="30" fill="#f3f6f8"/>
+<text x="1056" y="326.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">order_no</text>
+<text x="1424" y="326.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">VARCHAR(50)</text>
+<rect x="1000" y="336" width="440" height="30" fill="#ffffff"/>
+<text x="1056" y="356.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">amount</text>
+<text x="1424" y="356.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="366" width="440" height="30" fill="#f3f6f8"/>
+<text x="1056" y="386.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">canceled_amount</text>
+<text x="1424" y="386.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="396" width="440" height="30" fill="#ffffff"/>
+<text x="1056" y="416.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="1424" y="416.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<path d="M1000 426 h440 v22 a8 8 0 0 1 -8 8 h-424 a8 8 0 0 1 -8 -8 z" fill="#f3f6f8"/>
+<text x="1056" y="446.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">updated_at</text>
+<text x="1424" y="446.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="1000" y="140" width="440" height="316" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="1002" y="480" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* (사용거래 x 적립분) 1원 단위 사용 추적</text>
+<rect x="1000" y="620" width="440" height="256" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M1000 628 a8 8 0 0 1 8 -8 h424 a8 8 0 0 1 8 8 v38 h-440 z" fill="#2d3a4d"/>
+<text x="1016" y="649.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="17" fill="#fff">point_use_cancel_detail</text>
+<rect x="1000" y="666" width="440" height="30" fill="#f3f6f8"/>
+<text x="1016" y="686.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PK</text>
+<text x="1056" y="686.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">id</text>
+<text x="1424" y="686.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="696" width="440" height="30" fill="#ffffff"/>
+<text x="1016" y="716.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="1056" y="716.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">cancel_transaction_id</text>
+<text x="1424" y="716.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="726" width="440" height="30" fill="#f3f6f8"/>
+<text x="1016" y="746.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="1056" y="746.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">use_detail_id</text>
+<text x="1424" y="746.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="756" width="440" height="30" fill="#ffffff"/>
+<text x="1016" y="776.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="1056" y="776.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">point_lot_id</text>
+<text x="1424" y="776.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="786" width="440" height="30" fill="#f3f6f8"/>
+<text x="1056" y="806.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">amount</text>
+<text x="1424" y="806.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<rect x="1000" y="816" width="440" height="30" fill="#ffffff"/>
+<text x="1016" y="836.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">FK</text>
+<text x="1056" y="836.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="500" fill="#2f4a6b">reissued_lot_id</text>
+<text x="1424" y="836.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">BIGINT</text>
+<path d="M1000 846 h440 v22 a8 8 0 0 1 -8 8 h-424 a8 8 0 0 1 -8 -8 z" fill="#f3f6f8"/>
+<text x="1056" y="866.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" font-weight="400" fill="#22303f">created_at</text>
+<text x="1424" y="866.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">DATETIME</text>
+<rect x="1000" y="620" width="440" height="256" rx="8" fill="none" stroke="#c9d2db"/>
+<text x="1002" y="900" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* use_detail_id 가 source of truth</text>
+<text x="1002" y="920" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* point_lot_id 는 조회 편의 비정규화 (도출 가능)</text>
+<text x="1002" y="940" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">* reissued_lot_id NOT NULL = 만료로 신규 재적립</text>
+<text x="432" y="193.0" text-anchor="start" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="488" y="253.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+<text x="432" y="393.0" text-anchor="start" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="488" y="793.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+<text x="488" y="193.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="488" y="763.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="942" y="193.0" text-anchor="start" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="988" y="223.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+<text x="942" y="673.0" text-anchor="start" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="988" y="253.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+<text x="942" y="193.0" text-anchor="start" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="988" y="703.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+<text x="988" y="193.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="988" y="733.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+<text x="942" y="673.0" text-anchor="start" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">1</text>
+<text x="988" y="763.0" text-anchor="end" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#5f6f80">N</text>
+
+<text x="900" y="1200" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="15" font-weight="500" fill="#22303f">Legend</text>
+<text x="900" y="1226" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">PK Primary Key   UK Unique Key   FK 논리적 외래키(물리 FK 미설정)</text>
+
+<text x="40" y="1226" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">사용 가능 = remaining_amount &gt; 0 AND status = ACTIVE AND expire_at &gt; now()</text>
+<text x="40" y="1250" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">잔액 = SUM(point_lot.remaining_amount) WHERE 위 조건</text>
+<text x="40" y="1274" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">사용 우선순위 = use_priority ASC(수기 우선), expire_at ASC, id ASC</text>
+<text x="40" y="1298" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">거래 내역 조회 = idx(user_id, created_at DESC) 커버링 인덱스</text>
+
+</svg>

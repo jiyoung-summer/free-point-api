@@ -1,0 +1,212 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1950" height="1424" viewBox="0 0 1950 1424" role="img">
+<title>Free Point API — AWS Architecture (가정)</title>
+<desc>전자금융업법 대응 논리적 망분리, API Gateway 계층의 인증/인가 분리, 대용량 트래픽 확장성, 회원 1,000만 명 규모 대량 지급 처리를 반영한 AWS 배포 구성</desc>
+<rect width="1950" height="1424" fill="#fff"/>
+
+<text x="40" y="62" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="30" font-weight="500" fill="#22303f">Free Point API — AWS Architecture (가정)</text>
+<text x="40" y="92" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="14" fill="#8b95a3">전자금융업법 대응 논리적 망분리 · API Gateway 인증/인가 분리 · 대용량 트래픽 확장성 · 회원 1,000만 명 규모 대량 지급 (resources/erd_ext.svg 운영 확장 테이블 반영)</text>
+
+<text x="40" y="112" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#5f6f80">Internet ▼</text>
+
+<!-- Edge zone -->
+<rect x="40" y="120" width="1520" height="110" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M40 128 a8 8 0 0 1 8 -8 h1504 a8 8 0 0 1 8 8 v22 h-1520 z" fill="#2d3a4d"/>
+<text x="56" y="145.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="15" fill="#fff">Edge (Public Internet 경계)</text>
+
+<rect x="70" y="172" width="350" height="46" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="86" y="192.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">Route 53</text>
+<text x="86" y="208.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Latency / Failover Routing</text>
+
+<rect x="440" y="172" width="350" height="46" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="456" y="192.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">AWS WAF + Shield</text>
+<text x="456" y="208.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">DDoS / 과다 요청 방어</text>
+
+<rect x="810" y="172" width="350" height="46" rx="6" fill="#fdf3e2" stroke="#c9922b"/>
+<text x="826" y="192.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#8a5a10">Amazon API Gateway</text>
+<text x="826" y="208.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8a5a10">인증(JWT)·인가(Role) 검증 후 ALB로 전달</text>
+
+<rect x="1180" y="172" width="350" height="46" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="1196" y="192.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">CloudFront</text>
+<text x="1196" y="208.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">정적 리소스만 캐시 (적립/사용 API 제외)</text>
+
+<!-- VPC outer -->
+<rect x="40" y="250" width="1520" height="800" rx="8" fill="#fff" stroke="#c9d2db" stroke-width="1.4"/>
+<path d="M40 258 a8 8 0 0 1 8 -8 h1504 a8 8 0 0 1 8 8 v22 h-1520 z" fill="#2d3a4d"/>
+<text x="56" y="275.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="15" fill="#fff">VPC — 논리적 망분리 (Public / Private-App / Private-Data 3-Tier)</text>
+
+<!-- Row 1 : Public Subnet / Internal ALB / VPC Endpoint -->
+<rect x="70" y="302" width="460" height="110" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M70 310 a8 8 0 0 1 8 -8 h444 a8 8 0 0 1 8 8 v22 h-460 z" fill="#2d3a4d"/>
+<text x="86" y="327.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">Public Subnet (AZ x2)</text>
+<text x="86" y="358.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#22303f">Internet-facing ALB</text>
+<text x="86" y="378.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">/api/v1/points/** (회원 API 전용)</text>
+<text x="86" y="396.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">TLS 종료 · WAF 통과 트래픽만 수신</text>
+
+<rect x="550" y="302" width="460" height="110" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M550 310 a8 8 0 0 1 8 -8 h444 a8 8 0 0 1 8 8 v22 h-460 z" fill="#0f6e56"/>
+<text x="566" y="327.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">Internal ALB (Admin 전용)</text>
+<text x="566" y="358.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#22303f">/api/v1/admin/**</text>
+<text x="566" y="378.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">IGW 경로 없음 — 인터넷에서 직접 도달 불가</text>
+<text x="566" y="396.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">사내망 전용선/VPN 트래픽만 허용</text>
+
+<rect x="1030" y="302" width="460" height="110" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M1030 310 a8 8 0 0 1 8 -8 h444 a8 8 0 0 1 8 8 v22 h-460 z" fill="#2d3a4d"/>
+<text x="1046" y="327.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">VPC Endpoint (Interface/Gateway)</text>
+<text x="1046" y="358.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" font-weight="500" fill="#22303f">Secrets Manager · KMS · ECR</text>
+<text x="1046" y="376.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" font-weight="500" fill="#22303f">CloudWatch Logs</text>
+<text x="1046" y="396.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">NAT/인터넷 경유 없이 사설망 안에서만 통신</text>
+
+<!-- Row 2 : Private App Subnet -->
+<rect x="70" y="432" width="1420" height="140" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M70 440 a8 8 0 0 1 8 -8 h1404 a8 8 0 0 1 8 8 v22 h-1420 z" fill="#2d3a4d"/>
+<text x="86" y="457.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">Private App Subnet (AZ x2)</text>
+
+<rect x="100" y="490" width="650" height="60" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="116" y="512.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">ECS Fargate — free-point-api (회원)</text>
+<text x="116" y="530.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Target Tracking Auto Scaling (CPU/RPS) · 무상태</text>
+
+<rect x="790" y="490" width="650" height="60" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="806" y="512.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">ECS Fargate — admin (관리자 전용)</text>
+<text x="806" y="530.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Task Role 서비스 단위 최소 권한(IAM)</text>
+
+<!-- Row 3 : Private Data Subnet / Batch-Async -->
+<rect x="70" y="592" width="690" height="230" rx="8" fill="#fff" stroke="#c9d2db" stroke-width="1.4"/>
+<path d="M70 600 a8 8 0 0 1 8 -8 h674 a8 8 0 0 1 8 8 v22 h-690 z" fill="#0f6e56"/>
+<text x="86" y="617.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">Private Data Subnet — IGW 라우팅 없음</text>
+
+<rect x="100" y="650" width="630" height="60" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="116" y="672.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">Aurora MySQL</text>
+<text x="116" y="690.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Writer 1 + Reader N (Multi-AZ) · RDS Proxy 커넥션 풀링</text>
+
+<rect x="100" y="722" width="630" height="60" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="116" y="744.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" font-weight="500" fill="#2f4a6b">ElastiCache Redis</text>
+<text x="116" y="762.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">PointPolicy 캐시 · Idempotency-Key 저장</text>
+
+<text x="86" y="805.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">인바운드 · 아웃바운드 인터넷 경로 완전 차단</text>
+
+<rect x="790" y="592" width="700" height="230" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M790 600 a8 8 0 0 1 8 -8 h684 a8 8 0 0 1 8 8 v22 h-700 z" fill="#2d3a4d"/>
+<text x="806" y="617.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">배치 · 비동기 (EventBridge Scheduler)</text>
+
+<rect x="820" y="650" width="640" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="836" y="670.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">ECS Scheduled Task — 만료 배치</text>
+<text x="836" y="686.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">point_expire_job · 앱 인스턴스와 분리(중복실행 방지)</text>
+
+<rect x="820" y="710" width="640" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="836" y="730.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">ECS Scheduled Task — 정합성 대사</text>
+<text x="836" y="746.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">point_lot_ledger SUM(delta) vs point_lot.remaining_amount</text>
+
+<rect x="820" y="770" width="640" height="42" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="836" y="787.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">SQS + DLQ</text>
+<text x="836" y="803.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">정산/CRM 연동 · admin_audit_log 비동기 적재</text>
+
+<!-- Row 4 : Observability -->
+<rect x="70" y="842" width="1420" height="80" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M70 850 a8 8 0 0 1 8 -8 h1404 a8 8 0 0 1 8 8 v14 h-1420 z" fill="#2d3a4d"/>
+<text x="86" y="864.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#fff">관측성 (Observability)</text>
+<text x="86" y="900.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#22303f">CloudWatch(Logs/Alarm) · GuardDuty · VPC Flow Logs · CloudTrail</text>
+
+<!-- Row 5 : Data protection -->
+<rect x="70" y="932" width="1420" height="100" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M70 940 a8 8 0 0 1 8 -8 h1404 a8 8 0 0 1 8 8 v14 h-1420 z" fill="#2d3a4d"/>
+<text x="86" y="954.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#fff">데이터 보호 / 로그 보관</text>
+<text x="86" y="990.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#22303f">KMS(저장 암호화) · ACM(TLS 1.2+) · Secrets Manager(자격증명)</text>
+<text x="86" y="1012.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#22303f">admin_audit_log · CloudWatch Logs → S3(Object Lock) 1년 이상 보관</text>
+
+<!-- Right column : Corp network / DR -->
+<rect x="1610" y="302" width="300" height="110" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M1610 310 a8 8 0 0 1 8 -8 h284 a8 8 0 0 1 8 8 v22 h-300 z" fill="#0f6e56"/>
+<text x="1626" y="327.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">사내망 (Corp Network)</text>
+<text x="1626" y="358.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#22303f">운영자 / 관리자 접속</text>
+<text x="1626" y="378.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Direct Connect 또는</text>
+<text x="1626" y="394.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Site-to-Site VPN 전용</text>
+
+<rect x="1610" y="592" width="300" height="230" rx="8" fill="#fff" stroke="#c9d2db"/>
+<path d="M1610 600 a8 8 0 0 1 8 -8 h284 a8 8 0 0 1 8 8 v22 h-300 z" fill="#2d3a4d"/>
+<text x="1626" y="617.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">DR — 보조 리전</text>
+<text x="1626" y="650.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#22303f">Aurora Global Database</text>
+<text x="1626" y="668.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">(교차 리전 복제)</text>
+<text x="1626" y="700.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12" fill="#22303f">RTO / RPO 정의</text>
+<text x="1626" y="718.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">정기 페일오버 훈련</text>
+
+<!-- Arrows -->
+<path d="M300 412 L300 450 L425 450 L425 490" fill="none" stroke="#5f6f80" stroke-width="1.2" opacity="0.85"/>
+<circle cx="300" cy="412" r="3.5" fill="#5f6f80"/>
+<circle cx="425" cy="490" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+
+<path d="M780 412 L780 450 L1115 450 L1115 490" fill="none" stroke="#5f6f80" stroke-width="1.2" opacity="0.85"/>
+<circle cx="780" cy="412" r="3.5" fill="#5f6f80"/>
+<circle cx="1115" cy="490" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+
+<path d="M1610 412 L1610 425 L900 425 L900 412" fill="none" stroke="#5f6f80" stroke-width="1.2" opacity="0.85"/>
+<circle cx="1610" cy="412" r="3.5" fill="#5f6f80"/>
+<circle cx="900" cy="412" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<text x="1420" y="420.0" text-anchor="middle" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#5f6f80">전용선/VPN</text>
+
+<path d="M1260 412 L1260 432" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-dasharray="5 4" opacity="0.85"/>
+<circle cx="1260" cy="412" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<circle cx="1260" cy="432" r="3.5" fill="#5f6f80"/>
+
+<path d="M425 572 L415 592" fill="none" stroke="#5f6f80" stroke-width="1.2" opacity="0.85"/>
+<circle cx="425" cy="572" r="3.5" fill="#5f6f80"/>
+<circle cx="415" cy="592" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+
+<path d="M1115 572 L1140 592" fill="none" stroke="#5f6f80" stroke-width="1.2" opacity="0.85"/>
+<circle cx="1115" cy="572" r="3.5" fill="#5f6f80"/>
+<circle cx="1140" cy="592" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+
+<path d="M760 800 L760 833 L1610 833 L1610 800" fill="none" stroke="#5f6f80" stroke-width="1.2" stroke-dasharray="5 4" opacity="0.85"/>
+<circle cx="760" cy="800" r="3.5" fill="#5f6f80"/>
+<circle cx="1610" cy="800" r="3.5" fill="none" stroke="#5f6f80" stroke-width="1.4"/>
+<text x="1185" y="829.0" text-anchor="middle" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#5f6f80">Cross-Region Replication</text>
+
+<!-- Legend -->
+<text x="1610" y="900" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="15" font-weight="500" fill="#22303f">Legend</text>
+<rect x="1610" y="916" width="26" height="14" rx="3" fill="#0f6e56"/>
+<text x="1646" y="927.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">망분리/감사 핵심 구간</text>
+<rect x="1610" y="940" width="26" height="14" rx="3" fill="#2d3a4d"/>
+<text x="1646" y="951.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">표준 구성요소</text>
+<path d="M1610 968 L1636 968" stroke="#5f6f80" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="1646" y="972.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">비동기/논리적 참조</text>
+<rect x="1610" y="988" width="26" height="14" rx="3" fill="#fdf3e2" stroke="#c9922b"/>
+<text x="1646" y="999.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11.5" fill="#8b95a3">인증/인가 경계(API Gateway)</text>
+
+<!-- Row 6 : 대량 지급(캠페인) 처리 — 회원 1,000만 명 규모 -->
+<rect x="70" y="1050" width="1420" height="220" rx="8" fill="#fff" stroke="#c9d2db" stroke-width="1.4"/>
+<path d="M70 1058 a8 8 0 0 1 8 -8 h1404 a8 8 0 0 1 8 8 v22 h-1420 z" fill="#2d3a4d"/>
+<text x="86" y="1075.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="13" fill="#fff">대량 지급(캠페인) 처리 — 회원 1,000만 명 규모</text>
+
+<rect x="100" y="1096" width="440" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="116" y="1114.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">S3 — 캠페인 대상 목록</text>
+<text x="116" y="1130.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">세그먼트 쿼리 결과(CSV/Parquet) 업로드</text>
+
+<rect x="560" y="1096" width="440" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="576" y="1114.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">ECS Task — Producer</text>
+<text x="576" y="1130.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">대상자 청크 분할 → SQS SendMessageBatch</text>
+
+<rect x="1020" y="1096" width="440" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="1036" y="1114.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">SQS(Standard) + DLQ</text>
+<text x="1036" y="1130.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">대량 발행 · 워커 처리 실패 건은 DLQ 재처리</text>
+
+<rect x="100" y="1160" width="440" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="116" y="1178.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">ECS Fargate Worker (Auto Scaling)</text>
+<text x="116" y="1194.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">큐 깊이 기준 스케일 아웃 · JDBC batch insert</text>
+
+<rect x="560" y="1160" width="440" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="576" y="1178.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">point_campaign_job 진행 테이블</text>
+<text x="576" y="1194.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">target/processed/failed_count, status (point_expire_job과 동일 패턴)</text>
+
+<rect x="1020" y="1160" width="440" height="50" rx="6" fill="#f3f6f8" stroke="#c9d2db"/>
+<text x="1036" y="1178.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" font-weight="500" fill="#2f4a6b">멱등성 보장</text>
+<text x="1036" y="1194.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="10.5" fill="#8b95a3">(campaign_id, user_id) UNIQUE — 재시도해도 중복 지급 없음</text>
+
+<text x="86" y="1240.0" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#8b95a3">Aurora 보호 : 워커 동시성 상한 + Aurora Serverless v2 ACU 일시 확장 또는 저트래픽 시간대 실행 — 실시간 회원 트래픽과 쓰기 경합 최소화</text>
+
+<!-- Bottom notes -->
+<text x="40" y="1290" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">잔액 = SUM(point_lot.remaining_amount) — Reader에서 실시간 계산, 별도 캐시 컬럼 없음</text>
+<text x="40" y="1314" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">정합성 대사 = point_lot_ledger.SUM(delta) 불일치 시 CloudWatch Alarm → SNS 즉시 통보</text>
+<text x="40" y="1338" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">만료 전환 = point_expire_job 배치가 담당, 조회 시점 expire_at 판정과 이중 방어</text>
+<text x="40" y="1362" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">관리자 행위는 성공/거절 관계없이 admin_audit_log 에 전량 기록 (업무 트랜잭션과 분리)</text>
+<text x="40" y="1386" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="12.5" fill="#8b95a3">인증/인가 = API Gateway 계층 책임. ECS Fargate(회원/관리자)는 이미 인증을 통과한 요청만 수신 — 애플리케이션 코드에는 별도 인증/인가 로직을 두지 않음(의도적 제외)</text>
+<text x="40" y="1410" font-family="'JetBrains Mono','DejaVu Sans Mono','Menlo','Consolas',monospace" font-size="11" fill="#b6bec8">※ 망분리 관련 서술은 일반적으로 통용되는 해석이며 법률 자문이 아님. 실제 적용 전 컴플라이언스 검토 필요.</text>
+</svg>
