@@ -38,6 +38,11 @@ spring:
     open-in-view: false
 
 springdoc:
+  # @ParameterObject 없이도 Pageable(sort 포함)을 page/size/sort 개별 쿼리 파라미터로 평탄화한다.
+  # 이게 없으면 sort(Sort 타입)가 일반 객체로 문서화되어 Swagger UI가 JSON 배열(["createdAt"])로
+  # 보내버리는데, Spring의 Pageable 리졸버는 그 형식을 모르고 문자열 그대로를 필드명 취급해
+  # 화이트리스트(SortSupport)에서 거절당한다 — 실제로 재현 후 추가한 설정이다.
+  default-flat-param-object: true
   swagger-ui:
     path: /swagger-ui.html
     operations-sorter: alpha
