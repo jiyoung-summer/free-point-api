@@ -35,9 +35,9 @@ class PointServiceCancelOwnershipTest {
 	void 소유자가_아닌_userId로_적립취소를_요청하면_ENTITY_NOT_FOUND로_거절되고_잔액에_흔적을_남기지_않는다() {
 		long ownerId = System.nanoTime();
 		long strangerId = ownerId + 1;
-		var earned = pointService.earn(new EarnRequest(ownerId, 1000, null, null));
+		var earned = pointService.earn(new EarnRequest(ownerId, 1000, null, null, null));
 
-		assertThatThrownBy(() -> pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(strangerId)))
+		assertThatThrownBy(() -> pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(strangerId, null)))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.ENTITY_NOT_FOUND));
@@ -50,9 +50,9 @@ class PointServiceCancelOwnershipTest {
 	@Test
 	void 진짜_소유자는_같은_pointKey로_정상적으로_적립취소할_수_있다() {
 		long ownerId = System.nanoTime();
-		var earned = pointService.earn(new EarnRequest(ownerId, 1000, null, null));
+		var earned = pointService.earn(new EarnRequest(ownerId, 1000, null, null, null));
 
-		var response = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(ownerId));
+		var response = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(ownerId, null));
 
 		assertThat(response.canceledAmount()).isEqualTo(1000);
 		assertThat(pointService.getBalance(ownerId).balance()).isZero();
@@ -62,10 +62,10 @@ class PointServiceCancelOwnershipTest {
 	void 소유자가_아닌_userId로_사용취소를_요청하면_ENTITY_NOT_FOUND로_거절되고_잔액을_복원하지_않는다() {
 		long ownerId = System.nanoTime();
 		long strangerId = ownerId + 1;
-		pointService.earn(new EarnRequest(ownerId, 1000, null, null));
-		var used = pointService.use(new UseRequest(ownerId, "ORD-1", 400));
+		pointService.earn(new EarnRequest(ownerId, 1000, null, null, null));
+		var used = pointService.use(new UseRequest(ownerId, "ORD-1", 400, null));
 
-		assertThatThrownBy(() -> pointService.useCancel(used.pointKey(), new UseCancelRequest(strangerId, 100)))
+		assertThatThrownBy(() -> pointService.useCancel(used.pointKey(), new UseCancelRequest(strangerId, 100, null)))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.ENTITY_NOT_FOUND));
@@ -77,10 +77,10 @@ class PointServiceCancelOwnershipTest {
 	@Test
 	void 진짜_소유자는_같은_pointKey로_정상적으로_사용취소할_수_있다() {
 		long ownerId = System.nanoTime();
-		pointService.earn(new EarnRequest(ownerId, 1000, null, null));
-		var used = pointService.use(new UseRequest(ownerId, "ORD-1", 400));
+		pointService.earn(new EarnRequest(ownerId, 1000, null, null, null));
+		var used = pointService.use(new UseRequest(ownerId, "ORD-1", 400, null));
 
-		var response = pointService.useCancel(used.pointKey(), new UseCancelRequest(ownerId, 100));
+		var response = pointService.useCancel(used.pointKey(), new UseCancelRequest(ownerId, 100, null));
 
 		assertThat(response.canceledAmount()).isEqualTo(100);
 		assertThat(pointService.getBalance(ownerId).balance()).isEqualTo(700);

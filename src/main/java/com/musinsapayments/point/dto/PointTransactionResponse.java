@@ -11,6 +11,7 @@ public record PointTransactionResponse(
 		@Schema(description = "거래 금액") long amount,
 		@Schema(description = "주문번호 (USE/USE_CANCEL만 존재)") String orderNo,
 		@Schema(description = "관련 원거래 ID (취소 거래에서 원거래를 가리킴)") Long relatedTransactionId,
+		@Schema(description = "호출자 측 외부 시스템의 거래 ID (선택, 추적용)") String clientTransactionId,
 		@Schema(description = "거래 일시") LocalDateTime createdAt
 ) {
 }

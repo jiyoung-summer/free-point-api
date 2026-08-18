@@ -38,8 +38,8 @@ class PointServiceUseCancelConcurrencyTest {
 		long cancelChunk = 300;
 		int threadCount = 5; // 요청 총합 1,500 > 취소가능금액 1,000 → 정확히 3건만 성공해야 한다(900원)
 
-		pointService.earn(new EarnRequest(userId, earnAmount, null, null));
-		PointUseResponse use = pointService.use(new UseRequest(userId, "ORDER-1", useAmount));
+		pointService.earn(new EarnRequest(userId, earnAmount, null, null, null));
+		PointUseResponse use = pointService.use(new UseRequest(userId, "ORDER-1", useAmount, null));
 
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 		CountDownLatch ready = new CountDownLatch(threadCount);
@@ -54,7 +54,7 @@ class PointServiceUseCancelConcurrencyTest {
 				ready.countDown();
 				try {
 					start.await();
-					pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, cancelChunk));
+					pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, cancelChunk, null));
 					successCount.incrementAndGet();
 				} catch (BusinessException e) {
 					rejectedCount.incrementAndGet();

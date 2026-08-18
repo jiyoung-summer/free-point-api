@@ -47,7 +47,7 @@ class PointServiceIdempotencyRollbackTest {
 		given(objectMapper.writeValueAsString(any())).willThrow(new JsonProcessingException("직렬화 강제 실패") {
 		});
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null), "key-1"))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null, null), "key-1"))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.IDEMPOTENCY_CODEC_FAILED));
@@ -63,7 +63,7 @@ class PointServiceIdempotencyRollbackTest {
 		String idempotencyKey = "read-fail-key";
 
 		// 최초 요청은 캐시 미스라 readValue()를 타지 않는다 — 정상 처리되어 응답이 저장된다.
-		pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey);
+		pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey);
 
 		// 저장된 응답을 읽으려 하면 항상 실패하도록 강제한다 — 배포 중 DTO 구조가 바뀌어 이전에
 		// 저장된 JSON과 안 맞는 상황 등을 재현한다. given(spy.method()).willThrow(...)는 스텁을
@@ -73,7 +73,7 @@ class PointServiceIdempotencyRollbackTest {
 		willThrow(new JsonProcessingException("역직렬화 강제 실패") {
 		}).given(objectMapper).readValue(anyString(), any(Class.class));
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.IDEMPOTENCY_CODEC_FAILED));

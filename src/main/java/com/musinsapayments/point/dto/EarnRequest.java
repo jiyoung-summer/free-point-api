@@ -17,6 +17,9 @@ public record EarnRequest(
 		Integer expireDays,
 
 		@Schema(description = "적립 사유 메모", example = "리뷰 이벤트")
-		@Size(max = 30) String memo
+		@Size(max = 30) String memo,
+
+		@Schema(description = "호출자 측 외부 시스템의 거래 ID(선택). 거래 추적 참고용으로만 저장되며 멱등성 처리에는 관여하지 않는다.", example = "ORDER-SYS-88231")
+		@Size(max = 100) String clientTransactionId
 ) {
 }

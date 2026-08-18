@@ -25,18 +25,18 @@ class PointServiceValidationTest {
 	@Test
 	void 사용_금액_0은_서비스_레이어에서도_거절된다() {
 		long userId = 200L;
-		pointService.earn(new EarnRequest(userId, 1000, null, null));
+		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
 
-		assertThatThrownBy(() -> pointService.use(new UseRequest(userId, "O-1", 0)))
+		assertThatThrownBy(() -> pointService.use(new UseRequest(userId, "O-1", 0, null)))
 				.isInstanceOf(BusinessException.class);
 	}
 
 	@Test
 	void 사용_금액_음수는_서비스_레이어에서도_거절되고_거래가_남지_않는다() {
 		long userId = 201L;
-		pointService.earn(new EarnRequest(userId, 1000, null, null));
+		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
 
-		assertThatThrownBy(() -> pointService.use(new UseRequest(userId, "O-1", -100)))
+		assertThatThrownBy(() -> pointService.use(new UseRequest(userId, "O-1", -100, null)))
 				.isInstanceOf(BusinessException.class);
 
 		// 음수 사용 시도가 잔액에 어떤 흔적도 남기면 안 된다.
@@ -46,12 +46,12 @@ class PointServiceValidationTest {
 	@Test
 	void 사용취소_금액_0과_음수는_서비스_레이어에서도_거절된다() {
 		long userId = 202L;
-		pointService.earn(new EarnRequest(userId, 1000, null, null));
-		var use = pointService.use(new UseRequest(userId, "O-1", 500));
+		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
+		var use = pointService.use(new UseRequest(userId, "O-1", 500, null));
 
-		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, 0)))
+		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, 0, null)))
 				.isInstanceOf(BusinessException.class);
-		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, -50)))
+		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, -50, null)))
 				.isInstanceOf(BusinessException.class);
 
 		// 잘못된 취소 시도가 잔액에 흔적을 남기면 안 된다.
@@ -62,11 +62,11 @@ class PointServiceValidationTest {
 	void 적립_금액_0_음수_Long_MAX_VALUE는_서비스_레이어에서도_거절된다() {
 		long userId = 203L;
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 0, null, null)))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 0, null, null, null)))
 				.isInstanceOf(BusinessException.class);
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, -1, null, null)))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, -1, null, null, null)))
 				.isInstanceOf(BusinessException.class);
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, Long.MAX_VALUE, null, null)))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, Long.MAX_VALUE, null, null, null)))
 				.isInstanceOf(BusinessException.class);
 
 		assertThat(pointService.getBalance(userId).balance()).isZero();

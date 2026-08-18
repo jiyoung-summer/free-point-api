@@ -37,7 +37,7 @@ class PointServiceMissingPolicyTest {
 		policyRepository.deleteAll();
 		long userId = System.nanoTime();
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null)))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null, null)))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.POLICY_NOT_CONFIGURED));

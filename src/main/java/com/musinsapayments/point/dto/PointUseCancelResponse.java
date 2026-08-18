@@ -16,7 +16,10 @@ public record PointUseCancelResponse(
 		long balance,
 
 		@Schema(description = "적립분별 복원/재적립 내역")
-		List<Restoration> restorations
+		List<Restoration> restorations,
+
+		@Schema(description = "호출자 측 외부 시스템의 거래 ID (선택, 추적용)")
+		String clientTransactionId
 ) {
 
 	@Schema(description = "reissued=true 면 originLotId 가 만료되어 reissuedPointKey 로 신규 적립되었다는 뜻이고, "

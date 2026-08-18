@@ -48,6 +48,9 @@ CREATE TABLE point_policy
 --                      idempotency_key 테이블이 별도로 담당한다.
 --                      user_id 는 조회 편의를 위한 비정규화 컬럼이고, 정규 관계는 account_id다.
 --                      display_code : 사용자 노출 문구는 메시지 번들에서 조회한다(행 크기 최소화 목적).
+--                      client_transaction_id : 호출자 측 외부 시스템(주문/결제 등)의 거래 ID. 거래 추적을
+--                      위한 참고값으로만 저장하며, 재시도 멱등성 판단에는 관여하지 않는다(그 역할은
+--                      idempotency_key 테이블이 전담한다) — 값 중복이 정상이라 유니크 제약을 두지 않는다.
 --                      운영자 개입 사유 등은 이 테이블 책임이 아니고, 별도 admin_audit_log(확장 범위)가 담당한다.
 -- ---------------------------------------------------------------------------
 CREATE TABLE point_transaction
@@ -61,6 +64,7 @@ CREATE TABLE point_transaction
     order_no                VARCHAR(50),
     related_transaction_id  BIGINT,                -- FK(logical) -> point_transaction.id (취소 거래가 원거래를 가리킴)
     display_code            VARCHAR(30),
+    client_transaction_id   VARCHAR(100),           -- 호출자 측 외부 시스템의 거래 ID(선택, 추적용)
     created_at              DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_point_transaction_point_key UNIQUE (point_key)
 );

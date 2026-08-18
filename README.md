@@ -41,7 +41,7 @@ java -jar build/libs/free-point-api-0.0.1-SNAPSHOT.jar
 |---|---|
 | `PointLotTest` | 사용/적립취소 상태 전이, 잔액 부족·만료·중복취소 거절, 만료 시각 경계값, 사용 금액 0/음수 거절, `restore()`의 4대 invariant(양수/ACTIVE/미만료/원금 초과 금지)와 오버플로의 `AMOUNT_OVERFLOW` 변환, 만료된 미사용 lot의 적립취소 거절 |
 | `PointPolicyTest` | 적립 금액/보유 한도/만료일 범위 검증, 만료일 미지정 시 기본값, 만료일 상한(1,824일), `versionLabel`/`appliedFrom`/`changedBy`/`changeReason` 필드 검증, 보유 한도 오버플로 방어 |
-| `RequestValidationTest` | 요청 DTO의 `@Positive` 검증 범위(0/음수 거절, 상한은 없음) |
+| `RequestValidationTest` | 요청 DTO의 `@Positive` 검증 범위(0/음수 거절, 상한은 없음), `clientTransactionId`의 `@Size(max=100)` 경계값 |
 | `PointServiceValidationTest` | `@Valid`가 적용되지 않는 서비스 직접 호출 경로에서도 amount<=0이 거절되고 잔액에 흔적을 남기지 않는지 |
 | `SortSupportTest` | `/lots`, `/transactions` 정렬 필드 화이트리스트 |
 | `PageableSupportTest` | `size` 상한 clamp, `page`/`sort`는 그대로 유지 |
@@ -52,12 +52,16 @@ java -jar build/libs/free-point-api-0.0.1-SNAPSHOT.jar
 | `PointServiceUseCancelConcurrencyTest` | 같은 사용 거래에 부분 사용취소가 동시에 몰려도 취소 가능 금액을 넘지 않음 |
 | `PointLotUsableConditionTest` | `USABLE_CONDITION`이 빠지면 즉시 실패하는 회귀 테스트 |
 | `PointAccountProvisionerConcurrencyTest` | 계정이 없는 사용자에게 최초 적립이 2–10건 동시에 들어와도 계정 1개, 정확한 lot 수/잔액 |
-| `PointControllerValidationTest` | HTTP 레벨 검증/에러 응답(적립 금액 0/음수, 빈 주문번호, 404, 파라미터 누락/타입 불일치, JSON 파싱 실패 500, 헬스 체크), `earn`/`earn cancel`/`use`/`use cancel` 4개 엔드포인트의 성공 응답 |
+| `PointControllerValidationTest` | HTTP 레벨 검증/에러 응답(적립 금액 0/음수, 빈 주문번호, 404, 파라미터 누락/타입 불일치, JSON 파싱 실패 500, 헬스 체크), `earn`/`earn cancel`/`use`/`use cancel` 4개 엔드포인트의 성공 응답, 소유자가 아닌 `userId`로 적립취소 HTTP 요청 시 404 |
 | `PointServiceIdempotencyTest` | `Idempotency-Key` 재시도 캐시, 키는 같고 내용이 다른 요청의 `IDEMPOTENCY_KEY_REUSED` 거절, 키 값 검증(공백/200자 초과/제어 문자), 동시 요청 시 정확히 1건만 처리 |
 | `PointServiceIdempotencyRollbackTest` | 멱등 응답 저장(직렬화)이 실패하면 같은 트랜잭션의 lot/거래 생성까지 전부 롤백되는지, 재시도 시 저장된 응답 복원(역직렬화)이 실패하면 비즈니스 로직 재실행 없이 잔액에 흔적을 남기지 않는지, 둘 다 `IDEMPOTENCY_CODEC_FAILED`로 구분되는지 |
 | `PointServiceMissingPolicyTest` | 정책이 하나도 없으면 다른 500 원인과 뭉뚱그려지지 않고 `POLICY_NOT_CONFIGURED`로 거절되는지 |
+| `PointServiceCancelOwnershipTest` | 적립취소/사용취소 요청의 `userId`가 pointKey의 실제 소유자와 다르면 `ENTITY_NOT_FOUND`로 거절되고 잔액/lot에 흔적을 남기지 않는지, 진짜 소유자는 정상 처리되는지 |
 | `PointControllerIdempotencyTest` | `Idempotency-Key` HTTP 헤더 배선, 공백 헤더 거절, GET 요청에 보낸 헤더는 완전히 무시되는지 |
+| `PointServiceClientTransactionIdTest` | `clientTransactionId`가 적립/적립취소/사용/사용취소 응답·저장된 거래·거래 이력 조회에 그대로 보존되는지, 생략 시 하위호환(null)되는지, 값 중복 허용, 만료 재적립 거래는 이 값을 물려받지 않는지, 멱등키 재사용 감지(`requestHash`)에는 영향을 주지 않는지 |
+| `PointControllerClientTransactionIdTest` | `clientTransactionId` 요청 본문 필드가 HTTP 레벨에서 응답/조회에 배선되는지, 길이 초과 시 400, `Idempotency-Key` 재시도 시 이 값이 달라도 최초 응답이 그대로 반환되는지 |
 | `SchemaIndexTest` | 핵심 인덱스가 실제 실행 스키마에 존재하는지 |
+| `OpenApiSortParamTest` | `sort` 쿼리 파라미터가 JSON `content`가 아니라 평범한 배열 스키마로 문서화되는지(Swagger UI에서 `sort` 입력 시 실제로 재현·확인한 문제) |
 | `PointApiApplicationTests` | Spring 컨텍스트 정상 기동 |
 
 만료 시나리오는 `Clock`을 빈으로 분리(`ClockConfig`)하고 테스트에서 `MutableClock`으로 교체해, `Thread.sleep` 없이 시간을 앞당겨 검증한다. 동시성 테스트는 `Thread.sleep` 기반 타이밍 대신 `CountDownLatch`로 여러 스레드를 같은 순간에 출발시켜 실제 경쟁 상태를 재현한다.
@@ -93,6 +97,8 @@ open build/reports/jacoco/test/html/index.html   # 사람이 보는 HTML 리포�
 - **`size`** : 전역 설정(`spring.data.web.pageable.max-page-size: 100`)에 더해, 컨트롤러에도 `MAX_LOT_PAGE_SIZE`/`MAX_TRANSACTION_PAGE_SIZE`(`PageableSupport.capSize`)로 상한을 한 번 더 명시해 이중으로 방어한다.
 - **`sort`** : 엔드포인트별 화이트리스트(`SortSupport`)를 통과한 필드만 허용한다 — `lots`는 `createdAt/expireAt/amount/remainingAmount`, `transactions`는 `createdAt/amount`만 가능하며, 그 외 필드를 요청하면 400을 반환한다.
 
+`springdoc.default-flat-param-object: true`를 설정해뒀다 — 이게 없으면 `Pageable`(안의 `Sort`)이 Swagger 문서에서 JSON `content`로 취급되어, Swagger UI의 "Try it out"에서 `sort`에 값을 넣고 실행하면 `sort=["createdAt"]`처럼 JSON 배열 문자열을 그대로 쿼리값으로 보낸다. `Pageable` 리졸버는 이 형식을 모르고 문자열 전체(`["createdAt"]`)를 필드명으로 취급해 화이트리스트에서 거절해버린다 — Swagger UI로 재현해서 확인한 문제다(`OpenApiSortParamTest`).
+
 ### 재시도 멱등성 — `Idempotency-Key` 헤더
 
 `point_transaction.point_key`는 서버가 요청마다 새로 발급하는 UUID라 재시도 멱등키로 쓸 수 없다(재시도해도 매번 새 UUID가 나온다). 상태를 바꾸는 5개 엔드포인트(`earn`/`earn cancel`/`use`/`use cancel`/`manual-earn`)가 선택적으로 받는 `Idempotency-Key` 헤더와 `idempotency_key` 테이블로 재시도 멱등성을 보장한다.
@@ -100,7 +106,7 @@ open build/reports/jacoco/test/html/index.html   # 사람이 보는 HTML 리포�
 - `(user_id, operation_type, idempotency_key)` 3개 컬럼에 DB unique 제약을 걸고, 요청 지문(`request_hash`, SHA-256)과 최초 처리 응답(JSON)을 저장한다. `operation_type`을 포함하는 이유는 클라이언트가 같은 키를 실수로 재사용해도 적립과 사용처럼 서로 다른 작업까지 뒤섞여 막히지 않게 하기 위함이다.
 - 처리 순서: ① `PointAccount` 비관적 락을 먼저 잡는다 → ② `idempotency_key`에서 기존 응답을 조회한다 → ③ 있으면(그리고 `request_hash`가 같으면) 저장된 응답을 그대로 반환한다 → ④ 없으면 평소대로 처리 후 같은 트랜잭션 안에서 응답을 저장한다. 계정 락이 같은 사용자의 동시 요청을 이미 직렬화하므로 별도의 분산 락이 필요 없다.
 - 캐시 조회는 정책 검증보다 먼저 한다 — 재시도는 정책이 그 사이 바뀌었더라도 항상 최초 결과를 그대로 돌려줘야 한다.
-- `request_hash`는 요청의 핵심 필드(EARN: `userId/amount/expireDays/memo`, EARN_CANCEL: `earnPointKey`, USE: `userId/orderNo/amount`, USE_CANCEL: `usePointKey/amount`)를 JSON 배열로 직렬화해 해시한다. 같은 키로 다른 내용의 요청이 오면 캐시를 쓰지 않고 `IDEMPOTENCY_KEY_REUSED`(409)로 거절한다.
+- `request_hash`는 요청의 핵심 필드(EARN: `userId/amount/expireDays/memo`, EARN_CANCEL: `earnPointKey`, USE: `userId/orderNo/amount`, USE_CANCEL: `usePointKey/amount`)를 JSON 배열로 직렬화해 해시한다. 같은 키로 다른 내용의 요청이 오면 캐시를 쓰지 않고 `IDEMPOTENCY_KEY_REUSED`(409)로 거절한다. `clientTransactionId`는 이 목록에 의도적으로 포함하지 않는다 — 비즈니스 내용이 아니라 호출자 측 참고값이라, 같은 멱등키로 이 값만 다르게 보내는 재시도까지 "내용이 다른 요청"으로 거절하면 안 되기 때문이다(아래 `clientTransactionId` 절 참고).
 - 저장은 `saveAndFlush()`로 즉시 반영한다 — DB unique 제약 위반은 (정상 경로에서는 계정 락이 이미 막아주지만) `IDEMPOTENCY_KEY_REUSED`로 변환하는 최종 안전망이다.
 - 헤더 값 자체도 검증한다: 공백, 200자 초과, 제어 문자 포함 시 `INVALID_INPUT_VALUE`(400)로 거절한다.
 - 헤더를 보내지 않으면 멱등성 보장 없이 매번 새로 처리된다(하위 호환을 위한 선택 사항).
@@ -110,6 +116,23 @@ open build/reports/jacoco/test/html/index.html   # 사람이 보는 HTML 리포�
 # 같은 Idempotency-Key로 재시도해도 중복 적립되지 않는다
 curl -s -X POST $BASE/points/earn -H 'Content-Type: application/json' -H 'Idempotency-Key: client-generated-key-1' \
   -d '{"userId":1,"amount":1000}'
+```
+
+### 거래 추적 참고값 — `clientTransactionId` 요청 본문 필드
+
+적립/적립취소/사용/사용취소 4개 엔드포인트는 요청 본문에 `clientTransactionId`(선택, 최대 100자)를 받는다. 호출자(주문/결제 등 외부 시스템) 쪽 자신의 거래 ID를 그대로 저장해뒀다가, 양쪽 로그·DB를 나중에 대조해 거래를 추적할 수 있게 하기 위한 참고값이다.
+
+- **`Idempotency-Key`와는 역할이 다르다.** `Idempotency-Key`는 재시도 시 중복 처리를 막는 데 쓰이고 DB 컬럼으로 저장되지 않는다(캐시된 응답 JSON 안에만 존재). `clientTransactionId`는 반대로 `point_transaction.client_transaction_id` 컬럼에 영구 저장되지만, 재시도/중복 판단에는 전혀 관여하지 않는다 — 같은 `Idempotency-Key`로 재시도하면서 `clientTransactionId`만 다르게 보내도 최초 응답이 그대로 반환된다(§ 위 `request_hash` 설명 참고).
+- 값 중복을 허용한다(유니크 제약 없음) — 여러 거래가 같은 외부 참조값을 가리켜도 정상이다.
+- 생략하면 `null`로 저장·반환되며, 기존 호출자와 완전히 하위 호환된다.
+- 각 거래(적립/적립취소/사용/사용취소)는 자신의 요청에 실린 `clientTransactionId`만 저장한다 — 예를 들어 적립취소 응답의 `clientTransactionId`는 그 취소 요청 자체의 값이지, 원 적립 요청의 값을 이어받지 않는다. 사용취소로 만료 적립분이 재적립되는 내부 거래(§3 참고)에는 호출자가 지정한 값이 없으므로 항상 `null`이다.
+- 관리자 수기 지급(`/admin/points/manual-earn`)에는 지원하지 않는다 — 회원이 직접 호출하는 4개 엔드포인트만 대상이다.
+- 응답(`PointEarnResponse` 등 4개 변경 응답과 `PointTransactionResponse`)에 그대로 echo 되어, 호출자가 별도 조회 없이 자신의 거래와 즉시 대조할 수 있다.
+
+```bash
+# 적립 요청에 호출자 측 거래 ID를 함께 보내면 응답과 이후 거래 이력 조회에도 그대로 남는다
+curl -s -X POST $BASE/points/earn -H 'Content-Type: application/json' \
+  -d '{"userId":1,"amount":1000,"clientTransactionId":"order-system-tx-88231"}'
 ```
 
 ### 요청 예시 — 요구사항 예시(A–E) 그대로 재현
@@ -132,7 +155,7 @@ curl -s -X POST $BASE/points/use -H 'Content-Type: application/json' \
 # 5) C의 사용금액 1200원 중 1100원 부분 사용취소 (pointKey D) — 잔액 300 -> 1400
 #    (A가 이미 만료되어 있었다면 A 몫 1000원은 신규적립(pointKey E)으로, B 몫 100원은 B에 직접 복원된다)
 curl -s -X POST $BASE/points/use/{C의 pointKey}/cancel -H 'Content-Type: application/json' \
-  -d '{"amount":1100}'
+  -d '{"userId":1,"amount":1100}'
 
 # 잔액 / 적립분 목록 / 거래 이력 조회
 curl -s "$BASE/points/balance?userId=1"
@@ -143,8 +166,10 @@ curl -s "$BASE/points/transactions?userId=1"
 curl -s -X POST $BASE/admin/points/manual-earn -H 'Content-Type: application/json' \
   -d '{"userId":1,"amount":300,"memo":"이벤트 보상"}'
 
-# 적립취소 (미사용 적립분만)
-curl -s -X POST $BASE/points/earn/{pointKey}/cancel
+# 적립취소 (미사용 적립분만) — userId가 pointKey의 실제 소유자와 달라도 존재하지 않는 pointKey와
+# 동일하게 404로 거절된다
+curl -s -X POST $BASE/points/earn/{pointKey}/cancel -H 'Content-Type: application/json' \
+  -d '{"userId":1}'
 ```
 
 모든 응답은 `{"success":true,"data":{...},"message":null}` 형태의 공통 포맷(`ApiResponse`)으로 감싸지며, 실패 시 HTTP 상태 코드와 함께 `{"code":"ERROR_CODE","message":"..."}`가 반환된다(`GlobalExceptionHandler`). `MissingServletRequestParameterException`(파라미터 누락), `MethodArgumentTypeMismatchException`(타입 불일치), `MethodArgumentNotValidException`(`@Valid` 실패)은 각각 400으로 매핑되고, 그 외 예외는 catch-all로 500을 반환한다.
@@ -163,7 +188,7 @@ ERD: [`resources/erd_core.svg`](resources/erd_core.svg) · 참고 DDL: [`db/sche
 |---|---|
 | `point_account` | 사용자별 계정. 잔액 변경(적립/적립취소/사용/사용취소) 시 비관적 락(`FOR UPDATE`)의 기준점. |
 | `point_policy` | 정책 "버전" 원장(append-only). 유효 정책 = `applied_from <= now()` 중 최신 1건. |
-| `point_transaction` | 거래 원장. 적립/적립취소/사용/사용취소 행위가 1건씩 기록되고 외부 식별자 `point_key`를 발급받는다. |
+| `point_transaction` | 거래 원장. 적립/적립취소/사용/사용취소 행위가 1건씩 기록되고 외부 식별자 `point_key`를 발급받는다. 호출자가 보낸 참고용 `client_transaction_id`(선택)도 함께 저장한다. |
 | `point_lot` | 적립 단위. EARN 거래 1건 = 1행. 적립금액/사용가능잔액/만료일/적립출처를 보유한다. |
 | `point_use_detail` | 사용 상세. (사용거래 × 적립분) 매핑으로 1원 단위 사용 추적과 부분취소를 지원한다. |
 | `point_use_cancel_detail` | 사용취소 상세. 어떤 사용상세를 얼마나 되돌렸는지, 만료로 인한 재적립 여부를 기록한다. |
@@ -183,6 +208,8 @@ SELECT COALESCE(SUM(remaining_amount), 0) FROM point_lot
 ```
 
 `db/schema.sql`의 범례대로 FK는 논리적 관계로만 표현하고 물리 `FOREIGN KEY` 제약은 걸지 않는다 — 엔티티도 이를 그대로 따라 `@ManyToOne` 대신 평범한 `Long` id 필드로 참조를 표현했다(`PointLot.policyId`, `PointUseDetail.pointLotId` 등).
+
+`point_transaction`에는 문자열 식별자가 세 가지 있는데 역할이 서로 다르다: `point_key`는 서버가 매 거래마다 새로 발급하는 UUID(재시도 멱등키 아님), `order_no`는 USE/USE_CANCEL에만 있는 주문 식별자, `client_transaction_id`는 4개 변경 API 전체에서 호출자가 선택적으로 보내는 외부 시스템 참고값이다(§2 `clientTransactionId` 절 참고). 세 값 모두 목적이 겹치지 않으므로 서로 대체할 수 없다.
 
 ---
 
@@ -227,6 +254,8 @@ SELECT COALESCE(SUM(remaining_amount), 0) FROM point_lot
 - `idx_point_lot_usable(user_id, status, use_priority, expire_at, id)` — 사용 가능 Lot 조회(`findUsableLotsForAllocation`)와 잔액 합계(`sumBalance`)가 공유한다.
 - `idx_point_lot_point_key(point_key)` — 적립취소(`earnCancel`)의 조회 경로.
 - `idx_point_transaction_user_created(user_id, created_at)` — 거래 내역 조회(`findByUserId`)는 `account_id`가 아니라 조회 편의용 비정규화 컬럼인 `user_id`로 필터링하므로 이 컬럼 기준으로 잡았다.
+
+`order_no`와 마찬가지로 `client_transaction_id`도 조회 조건으로 쓰이지 않고 저장·반환만 되므로 의도적으로 인덱스를 두지 않았다.
 
 `SchemaIndexTest`가 `INFORMATION_SCHEMA.INDEXES`를 직접 조회해 핵심 인덱스가 실제 스키마에 존재하는지 회귀 테스트로 지킨다.
 
@@ -273,6 +302,7 @@ free-point-api
 - **만료 배치 없음** : 만료는 조회/사용 시점에 `expire_at`을 비교하는 지연(lazy) 판정만 한다. `PointLot.expire()` 상태 전이 메서드는 있지만 이를 호출해 `status`를 실제로 `EXPIRED`로 바꾸는 스케줄러는 없다. `GET /points/lots` 응답은 `status`와 별도로 `usable`/`expired`를 조회 시점에 계산해 함께 내려주므로 클라이언트가 `status`를 사용 가능 여부로 오해할 필요는 없지만, 만료 통계 집계나 만료 임박 알림처럼 `status=EXPIRED` 전환이 실제로 필요한 용도에는 별도 배치가 있어야 한다.
 - **정책 변경 API 없음** : `point_policy`는 append-only로 설계했지만, 새 버전 행을 추가하는 관리자 API(`PUT /admin/policy` 등)는 아직 없다. 현재는 기동 시 시딩된 기본 정책 1건만 존재한다.
 - **애플리케이션 레벨 인증/인가 없음(의도적 제외)** : `/admin/points/manual-earn`을 포함한 모든 API는 코드 안에 인증/인가 로직이 없다 — `/admin/**` 경로 분리는 있지만 그 자체가 인가는 아니다. 인증(JWT/OAuth2 토큰 검증)과 인가(Role/Scope 검증)는 애플리케이션이 아니라 [`resources/aws_architecture.svg`](resources/aws_architecture.svg)의 API Gateway 계층 책임으로 두고, ECS Fargate에는 이미 인증을 통과한 요청만 도달한다고 가정했다. 다만 이번 제출 범위에서는 로컬 실행 시 Gateway가 없으므로 모든 API가 인증 없이 호출 가능한 상태다.
+  > **다만 적립취소/사용취소(`earnCancel`/`useCancel`)는 요청 본문의 `userId`가 대상 pointKey의 실제 소유자와 일치하는지는 서비스 레이어에서 직접 검증한다.** 인증이 없는 상태에서는 이 `userId` 자체도 클라이언트가 자유롭게 조작해 보낼 수 있어 진짜 신원 확인(authentication)은 아니지만, 최소한 "pointKey만 알면(우연히 유출/추측되면) 아무나 남의 취소를 요청할 수 있는" 구멍은 막는다 — 소유자가 다르면 존재하지 않는 pointKey와 동일하게 `ENTITY_NOT_FOUND`(404)로 응답해 존재 여부 자체도 흘리지 않는다(`PointServiceCancelOwnershipTest`).
 - **이력 아카이빙 없음** : `point_use_detail`/`point_transaction`은 계속 누적되는 원장이라, 실제 운영이라면 파티셔닝/아카이빙 정책이 필요하다.
 - **Swagger UI가 프로필 구분 없이 항상 열려 있음** : 아직 `local`/`prod` 프로필을 분리하지 않아 `springdoc.swagger-ui.enabled: false` 같은 운영 차단 설정이 없다. 실제 배포 전에는 운영 프로필에서 비활성화해야 한다.
 - **`Idempotency-Key` 헤더가 필수가 아니라 선택** : 결제 도메인 특성상 재시도는 항상 같은 키를 갖고 오도록 강제하는 편이 더 안전하지만, 기존 클라이언트와의 하위 호환을 위해 선택 사항으로 뒀다. 실제 운영에서는 상태 변경 API에 헤더를 필수로 강제하는 편을 권장한다.

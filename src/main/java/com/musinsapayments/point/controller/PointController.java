@@ -56,7 +56,8 @@ public class PointController {
 
 	@PostMapping("/earn")
 	@Operation(summary = "포인트 적립", description = "1회 적립 한도·개인별 최대 보유 한도는 point_policy로 런타임 제어된다. expireDays 미지정 시 정책 기본값(365일)이 적용된다. "
-			+ "Idempotency-Key 헤더를 보내면 같은 키로 재시도했을 때 중복 적립되지 않고 최초 응답이 그대로 반환된다.")
+			+ "Idempotency-Key 헤더를 보내면 같은 키로 재시도했을 때 중복 적립되지 않고 최초 응답이 그대로 반환된다. "
+			+ "clientTransactionId(선택)는 호출자 측 외부 시스템의 거래 ID를 거래 추적용으로 저장·반환만 하는 참고값으로, Idempotency-Key와 달리 재시도 판단에는 관여하지 않는다.")
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "적립 성공"),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "적립 금액/만료일이 정책 범위를 벗어남",
@@ -72,7 +73,8 @@ public class PointController {
 
 	@PostMapping("/earn/{pointKey}/cancel")
 	@Operation(summary = "적립 취소", description = "적립분이 한 번도 사용되지 않은 경우에만 취소할 수 있다. "
-			+ "요청 본문의 userId가 pointKey의 실제 소유자와 다르면 존재하지 않는 pointKey와 동일하게(404) 거절된다.")
+			+ "요청 본문의 userId가 pointKey의 실제 소유자와 다르면 존재하지 않는 pointKey와 동일하게(404) 거절된다. "
+			+ "clientTransactionId(선택)는 이 취소 요청 자체의 외부 거래 ID를 추적용으로 저장·반환한다(원 적립의 값과는 별개).")
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "적립 취소 성공"),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 pointKey이거나 userId가 소유자와 다름",
@@ -91,7 +93,8 @@ public class PointController {
 
 	@PostMapping("/use")
 	@Operation(summary = "포인트 사용", description = "주문 시에만 사용 가능. 관리자 수기 지급 적립분이 우선, 동일 우선순위 내에서는 만료 임박 적립분부터 소진한다. "
-			+ "Idempotency-Key 헤더를 보내면 같은 키로 재시도했을 때 중복 차감되지 않고 최초 응답이 그대로 반환된다.")
+			+ "Idempotency-Key 헤더를 보내면 같은 키로 재시도했을 때 중복 차감되지 않고 최초 응답이 그대로 반환된다. "
+			+ "clientTransactionId(선택)는 호출자 측 외부 시스템의 거래 ID를 거래 추적용으로 저장·반환만 하는 참고값이다.")
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 성공"),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "잔액 부족",
@@ -104,7 +107,8 @@ public class PointController {
 	}
 
 	@PostMapping("/use/{pointKey}/cancel")
-	@Operation(summary = "사용 취소", description = "전체/부분 취소를 지원한다. 취소 대상 적립분이 이미 만료되었다면 동일 금액을 신규 적립(pointKey 새로 발급)으로 되돌린다.")
+	@Operation(summary = "사용 취소", description = "전체/부분 취소를 지원한다. 취소 대상 적립분이 이미 만료되었다면 동일 금액을 신규 적립(pointKey 새로 발급)으로 되돌린다. "
+			+ "clientTransactionId(선택)는 이 취소 요청 자체의 외부 거래 ID를 추적용으로 저장·반환한다.")
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 취소 성공"),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 사용 거래 pointKey",

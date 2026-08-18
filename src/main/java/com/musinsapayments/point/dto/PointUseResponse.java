@@ -19,7 +19,10 @@ public record PointUseResponse(
 		long balance,
 
 		@Schema(description = "어떤 적립분에서 얼마씩 소진됐는지 (1원 단위 사용처 추적)")
-		List<Allocation> allocations
+		List<Allocation> allocations,
+
+		@Schema(description = "호출자 측 외부 시스템의 거래 ID (선택, 추적용)")
+		String clientTransactionId
 ) {
 
 	@Schema(description = "적립분별 사용 내역")

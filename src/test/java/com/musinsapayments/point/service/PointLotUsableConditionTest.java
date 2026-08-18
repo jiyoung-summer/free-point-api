@@ -56,7 +56,7 @@ class PointLotUsableConditionTest {
 		long userId = System.nanoTime();
 
 		// 1일 만료로 적립하고 쓰지 않은 채 2일을 흘려보낸다: 만료 배치가 없으니 status는 ACTIVE, remainingAmount도 그대로.
-		pointService.earn(new EarnRequest(userId, 1000, 1, null));
+		pointService.earn(new EarnRequest(userId, 1000, 1, null, null));
 		((MutableClock) clock).advance(Duration.ofDays(2));
 
 		// given: DB에 저장된 status는 여전히 ACTIVE이고 잔액도 그대로 남아있다 — 이게 이 테스트의 전제다.
@@ -70,7 +70,7 @@ class PointLotUsableConditionTest {
 				.isZero();
 
 		// when & then: 사용 가능한 lot이 없으므로 사용 시도는 잔액 부족으로 거절되어야 한다.
-		assertThatThrownBy(() -> pointService.use(new UseRequest(userId, "O-1", 1)))
+		assertThatThrownBy(() -> pointService.use(new UseRequest(userId, "O-1", 1, null)))
 				.as("만료된 lot으로는 사용할 수 없어야 한다")
 				.isInstanceOf(BusinessException.class);
 	}
