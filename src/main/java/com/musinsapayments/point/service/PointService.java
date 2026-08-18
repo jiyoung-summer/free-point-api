@@ -104,42 +104,29 @@ public class PointService {
 
 	private PointEarnResponse earn(Long userId, long amount, Integer expireDays, String memo, String clientTransactionId,
 			PointLot.EarnSource source, IdempotencyKeyRecord.OperationType operationType, String idempotencyKey) {
-		validateIdempotencyKey(idempotencyKey);
 		LocalDateTime now = LocalDateTime.now(clock);
 
-		// 멱등성 확인은 반드시 계정 락을 잡은 "뒤"에 한다 — 락 없이 조회부터 하면 동시에 들어온 같은 키의
-		// 두 요청이 둘 다 "기존 응답 없음"을 보고 둘 다 실행해버리는 경쟁이 생긴다. 락이 같은 사용자의
-		// 요청을 직렬화해주므로 별도의 분산 락 없이도 check-then-act가 안전해진다.
-		PointAccount account = resolveAccountForUpdate(userId);
-		String requestHash = requestHash(userId, amount, expireDays, memo);
-		if (idempotencyKey != null) {
-			Optional<PointEarnResponse> cached = checkIdempotency(userId, operationType, idempotencyKey,
-					requestHash, PointEarnResponse.class);
-			if (cached.isPresent()) {
-				return cached.get();
-			}
-		}
+		return executeIdempotent(userId, operationType, idempotencyKey,
+				new Object[] {userId, amount, expireDays, memo}, PointEarnResponse.class, now, account -> {
+					PointPolicy policy = currentPolicy(now);
+					policy.validateEarnAmount(amount);
 
-		PointPolicy policy = currentPolicy(now);
-		policy.validateEarnAmount(amount);
+					long currentBalance = lotRepository.sumBalance(userId, PointLot.Status.ACTIVE, now);
+					long projectedBalance = policy.validateHoldLimit(currentBalance, amount);
 
-		long currentBalance = lotRepository.sumBalance(userId, PointLot.Status.ACTIVE, now);
-		long projectedBalance = policy.validateHoldLimit(currentBalance, amount);
+					LocalDateTime expireAt = now.plusDays(policy.resolveExpireDays(expireDays));
 
-		LocalDateTime expireAt = now.plusDays(policy.resolveExpireDays(expireDays));
+					PointTransaction txn = PointTransaction.earn(account.getId(), userId, amount, memo, clientTransactionId, now);
+					transactionRepository.save(txn);
 
-		PointTransaction txn = PointTransaction.earn(account.getId(), userId, amount, memo, clientTransactionId, now);
-		transactionRepository.save(txn);
+					int priority = source == PointLot.EarnSource.MANUAL ? MANUAL_USE_PRIORITY : NORMAL_USE_PRIORITY;
+					PointLot lot = PointLot.earn(txn.getPointKey(), userId, txn.getId(), policy.getId(),
+							source, priority, amount, expireAt, now);
+					lotRepository.save(lot);
 
-		int priority = source == PointLot.EarnSource.MANUAL ? MANUAL_USE_PRIORITY : NORMAL_USE_PRIORITY;
-		PointLot lot = PointLot.earn(txn.getPointKey(), userId, txn.getId(), policy.getId(),
-				source, priority, amount, expireAt, now);
-		lotRepository.save(lot);
-
-		PointEarnResponse response = new PointEarnResponse(txn.getPointKey(), lot.getId(), amount, expireAt,
-				source == PointLot.EarnSource.MANUAL, projectedBalance, txn.getClientTransactionId());
-		saveIdempotentResponseIfPresent(userId, operationType, idempotencyKey, requestHash, response, now);
-		return response;
+					return new PointEarnResponse(txn.getPointKey(), lot.getId(), amount, expireAt,
+							source == PointLot.EarnSource.MANUAL, projectedBalance, txn.getClientTransactionId());
+				});
 	}
 
 	@Transactional
@@ -149,7 +136,6 @@ public class PointService {
 
 	@Transactional
 	public PointEarnCancelResponse earnCancel(String earnPointKey, EarnCancelRequest request, String idempotencyKey) {
-		validateIdempotencyKey(idempotencyKey);
 		LocalDateTime now = LocalDateTime.now(clock);
 		PointLot lot = lotRepository.findByPointKey(earnPointKey)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "적립 내역을 찾을 수 없습니다."));
@@ -159,29 +145,19 @@ public class PointService {
 			throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "적립 내역을 찾을 수 없습니다.");
 		}
 
-		PointAccount account = resolveAccountForUpdate(lot.getUserId());
-		String requestHash = requestHash(earnPointKey);
-		if (idempotencyKey != null) {
-			Optional<PointEarnCancelResponse> cached = checkIdempotency(lot.getUserId(),
-					IdempotencyKeyRecord.OperationType.EARN_CANCEL, idempotencyKey, requestHash, PointEarnCancelResponse.class);
-			if (cached.isPresent()) {
-				return cached.get();
-			}
-		}
+		return executeIdempotent(lot.getUserId(), IdempotencyKeyRecord.OperationType.EARN_CANCEL, idempotencyKey,
+				new Object[] {earnPointKey}, PointEarnCancelResponse.class, now, account -> {
+					long canceledAmount = lot.getRemainingAmount();
+					lot.cancelEarn(now);
 
-		long canceledAmount = lot.getRemainingAmount();
-		lot.cancelEarn(now);
+					PointTransaction txn = PointTransaction.earnCancel(account.getId(), lot.getUserId(), canceledAmount,
+							lot.getEarnTransactionId(), null, request.clientTransactionId(), now);
+					transactionRepository.save(txn);
 
-		PointTransaction txn = PointTransaction.earnCancel(account.getId(), lot.getUserId(), canceledAmount,
-				lot.getEarnTransactionId(), null, request.clientTransactionId(), now);
-		transactionRepository.save(txn);
-
-		long balance = lotRepository.sumBalance(lot.getUserId(), PointLot.Status.ACTIVE, now);
-		PointEarnCancelResponse response = new PointEarnCancelResponse(txn.getPointKey(), earnPointKey, canceledAmount, balance,
-				txn.getClientTransactionId());
-		saveIdempotentResponseIfPresent(lot.getUserId(), IdempotencyKeyRecord.OperationType.EARN_CANCEL, idempotencyKey,
-				requestHash, response, now);
-		return response;
+					long balance = lotRepository.sumBalance(lot.getUserId(), PointLot.Status.ACTIVE, now);
+					return new PointEarnCancelResponse(txn.getPointKey(), earnPointKey, canceledAmount, balance,
+							txn.getClientTransactionId());
+				});
 	}
 
 	@Transactional
@@ -194,52 +170,41 @@ public class PointService {
 		if (request.amount() <= 0) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "사용 금액은 0보다 커야 합니다.");
 		}
-		validateIdempotencyKey(idempotencyKey);
-
 		LocalDateTime now = LocalDateTime.now(clock);
-		PointAccount account = resolveAccountForUpdate(request.userId());
-		String requestHash = requestHash(request.userId(), request.orderNo(), request.amount());
-		if (idempotencyKey != null) {
-			Optional<PointUseResponse> cached = checkIdempotency(request.userId(),
-					IdempotencyKeyRecord.OperationType.USE, idempotencyKey, requestHash, PointUseResponse.class);
-			if (cached.isPresent()) {
-				return cached.get();
-			}
-		}
 
-		List<PointLot> usableLots = lotRepository.findUsableLotsForAllocation(request.userId(), PointLot.Status.ACTIVE, now);
-		long available = sumExact(usableLots.stream().mapToLong(PointLot::getRemainingAmount));
-		if (available < request.amount()) {
-			throw new BusinessException(ErrorCode.INSUFFICIENT_BALANCE);
-		}
+		return executeIdempotent(request.userId(), IdempotencyKeyRecord.OperationType.USE, idempotencyKey,
+				new Object[] {request.userId(), request.orderNo(), request.amount()}, PointUseResponse.class, now, account -> {
+					List<PointLot> usableLots = lotRepository.findUsableLotsForAllocation(request.userId(), PointLot.Status.ACTIVE, now);
+					long available = sumExact(usableLots.stream().mapToLong(PointLot::getRemainingAmount));
+					if (available < request.amount()) {
+						throw new BusinessException(ErrorCode.INSUFFICIENT_BALANCE);
+					}
 
-		PointTransaction txn = PointTransaction.use(account.getId(), request.userId(), request.amount(),
-				request.orderNo(), null, request.clientTransactionId(), now);
-		transactionRepository.save(txn);
+					PointTransaction txn = PointTransaction.use(account.getId(), request.userId(), request.amount(),
+							request.orderNo(), null, request.clientTransactionId(), now);
+					transactionRepository.save(txn);
 
-		List<PointUseResponse.Allocation> allocations = new ArrayList<>();
-		long remaining = request.amount();
-		for (PointLot lot : usableLots) {
-			if (remaining <= 0) {
-				break;
-			}
-			long take = Math.min(lot.getRemainingAmount(), remaining);
-			lot.use(take, now);
+					List<PointUseResponse.Allocation> allocations = new ArrayList<>();
+					long remaining = request.amount();
+					for (PointLot lot : usableLots) {
+						if (remaining <= 0) {
+							break;
+						}
+						long take = Math.min(lot.getRemainingAmount(), remaining);
+						lot.use(take, now);
 
-			PointUseDetail detail = PointUseDetail.of(txn.getId(), lot.getId(), request.userId(),
-					request.orderNo(), take, now);
-			useDetailRepository.save(detail);
+						PointUseDetail detail = PointUseDetail.of(txn.getId(), lot.getId(), request.userId(),
+								request.orderNo(), take, now);
+						useDetailRepository.save(detail);
 
-			allocations.add(new PointUseResponse.Allocation(lot.getId(), lot.getPointKey(), take));
-			remaining -= take;
-		}
+						allocations.add(new PointUseResponse.Allocation(lot.getId(), lot.getPointKey(), take));
+						remaining -= take;
+					}
 
-		long balance = lotRepository.sumBalance(request.userId(), PointLot.Status.ACTIVE, now);
-		PointUseResponse response = new PointUseResponse(txn.getPointKey(), request.orderNo(), request.amount(), balance,
-				allocations, txn.getClientTransactionId());
-		saveIdempotentResponseIfPresent(request.userId(), IdempotencyKeyRecord.OperationType.USE, idempotencyKey,
-				requestHash, response, now);
-		return response;
+					long balance = lotRepository.sumBalance(request.userId(), PointLot.Status.ACTIVE, now);
+					return new PointUseResponse(txn.getPointKey(), request.orderNo(), request.amount(), balance,
+							allocations, txn.getClientTransactionId());
+				});
 	}
 
 	@Transactional
@@ -252,8 +217,6 @@ public class PointService {
 		if (request.amount() <= 0) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "취소 금액은 0보다 커야 합니다.");
 		}
-		validateIdempotencyKey(idempotencyKey);
-
 		LocalDateTime now = LocalDateTime.now(clock);
 		PointTransaction useTxn = transactionRepository.findByPointKey(usePointKey)
 				.filter(t -> t.getTransactionType() == PointTransaction.Type.USE)
@@ -263,55 +226,45 @@ public class PointService {
 			throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "사용 내역을 찾을 수 없습니다.");
 		}
 
-		PointAccount account = resolveAccountForUpdate(useTxn.getUserId());
-		String requestHash = requestHash(usePointKey, request.amount());
-		if (idempotencyKey != null) {
-			Optional<PointUseCancelResponse> cached = checkIdempotency(useTxn.getUserId(),
-					IdempotencyKeyRecord.OperationType.USE_CANCEL, idempotencyKey, requestHash, PointUseCancelResponse.class);
-			if (cached.isPresent()) {
-				return cached.get();
-			}
-		}
+		return executeIdempotent(useTxn.getUserId(), IdempotencyKeyRecord.OperationType.USE_CANCEL, idempotencyKey,
+				new Object[] {usePointKey, request.amount()}, PointUseCancelResponse.class, now, account -> {
+					PointPolicy policy = currentPolicy(now);
 
-		PointPolicy policy = currentPolicy(now);
+					List<PointUseDetail> details = useDetailRepository.findByUseTransactionIdOrderById(useTxn.getId());
+					long cancelableTotal = sumExact(details.stream().mapToLong(PointUseDetail::cancelableAmount));
+					if (request.amount() > cancelableTotal) {
+						throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "취소 가능 금액을 초과했습니다.");
+					}
 
-		List<PointUseDetail> details = useDetailRepository.findByUseTransactionIdOrderById(useTxn.getId());
-		long cancelableTotal = sumExact(details.stream().mapToLong(PointUseDetail::cancelableAmount));
-		if (request.amount() > cancelableTotal) {
-			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "취소 가능 금액을 초과했습니다.");
-		}
+					PointTransaction cancelTxn = PointTransaction.useCancel(account.getId(), useTxn.getUserId(),
+							request.amount(), useTxn.getOrderNo(), useTxn.getId(), null, request.clientTransactionId(), now);
+					transactionRepository.save(cancelTxn);
 
-		PointTransaction cancelTxn = PointTransaction.useCancel(account.getId(), useTxn.getUserId(),
-				request.amount(), useTxn.getOrderNo(), useTxn.getId(), null, request.clientTransactionId(), now);
-		transactionRepository.save(cancelTxn);
+					// details 개수만큼 findById를 반복하면 N+1이 된다 — 대상 lot을 한 번에 모아서 가져온다.
+					Map<Long, PointLot> originLotsByLotId = lotRepository
+							.findAllById(details.stream().map(PointUseDetail::getPointLotId).distinct().toList())
+							.stream()
+							.collect(Collectors.toMap(PointLot::getId, Function.identity()));
 
-		// details 개수만큼 findById를 반복하면 N+1이 된다 — 대상 lot을 한 번에 모아서 가져온다.
-		Map<Long, PointLot> originLotsByLotId = lotRepository
-				.findAllById(details.stream().map(PointUseDetail::getPointLotId).distinct().toList())
-				.stream()
-				.collect(Collectors.toMap(PointLot::getId, Function.identity()));
+					List<PointUseCancelResponse.Restoration> restorations = new ArrayList<>();
+					long remaining = request.amount();
+					for (PointUseDetail detail : details) {
+						if (remaining <= 0) {
+							break;
+						}
+						long take = Math.min(detail.cancelableAmount(), remaining);
+						if (take <= 0) {
+							continue;
+						}
+						detail.cancel(take, now);
+						restorations.add(restoreAllocation(cancelTxn, detail, take, policy, originLotsByLotId, now));
+						remaining -= take;
+					}
 
-		List<PointUseCancelResponse.Restoration> restorations = new ArrayList<>();
-		long remaining = request.amount();
-		for (PointUseDetail detail : details) {
-			if (remaining <= 0) {
-				break;
-			}
-			long take = Math.min(detail.cancelableAmount(), remaining);
-			if (take <= 0) {
-				continue;
-			}
-			detail.cancel(take, now);
-			restorations.add(restoreAllocation(cancelTxn, detail, take, policy, originLotsByLotId, now));
-			remaining -= take;
-		}
-
-		long balance = lotRepository.sumBalance(useTxn.getUserId(), PointLot.Status.ACTIVE, now);
-		PointUseCancelResponse response = new PointUseCancelResponse(cancelTxn.getPointKey(), request.amount(), balance,
-				restorations, cancelTxn.getClientTransactionId());
-		saveIdempotentResponseIfPresent(useTxn.getUserId(), IdempotencyKeyRecord.OperationType.USE_CANCEL, idempotencyKey,
-				requestHash, response, now);
-		return response;
+					long balance = lotRepository.sumBalance(useTxn.getUserId(), PointLot.Status.ACTIVE, now);
+					return new PointUseCancelResponse(cancelTxn.getPointKey(), request.amount(), balance,
+							restorations, cancelTxn.getClientTransactionId());
+				});
 	}
 
 	public PointBalanceResponse getBalance(Long userId) {
@@ -381,6 +334,32 @@ public class PointService {
 					return accountRepository.findByUserIdForUpdate(userId)
 							.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_PROVISIONING_FAILED));
 				});
+	}
+
+	/**
+	 * 검증 → 계정 락 → 멱등 캐시 조회 → 비즈니스 로직 → 멱등 응답 저장으로 이어지는 4개 오퍼레이션
+	 * (earn/earnCancel/use/useCancel) 공통 골격이다. 개별 오퍼레이션은 이 순서를 스스로 신경 쓸 필요
+	 * 없이 자신만의 비즈니스 로직(businessLogic)과 해시 대상 필드(hashParts)만 넘기면 된다.
+	 *
+	 * 멱등성 확인은 반드시 계정 락을 잡은 "뒤"에 한다 — 락 없이 조회부터 하면 동시에 들어온 같은 키의
+	 * 두 요청이 둘 다 "기존 응답 없음"을 보고 둘 다 실행해버리는 경쟁이 생긴다. 락이 같은 사용자의
+	 * 요청을 직렬화해주므로 별도의 분산 락 없이도 check-then-act가 안전해진다.
+	 */
+	private <T> T executeIdempotent(long userId, IdempotencyKeyRecord.OperationType operationType, String idempotencyKey,
+			Object[] hashParts, Class<T> responseType, LocalDateTime now, Function<PointAccount, T> businessLogic) {
+		validateIdempotencyKey(idempotencyKey);
+		PointAccount account = resolveAccountForUpdate(userId);
+		String requestHash = requestHash(hashParts);
+		if (idempotencyKey != null) {
+			Optional<T> cached = checkIdempotency(userId, operationType, idempotencyKey, requestHash, responseType);
+			if (cached.isPresent()) {
+				return cached.get();
+			}
+		}
+
+		T response = businessLogic.apply(account);
+		saveIdempotentResponseIfPresent(userId, operationType, idempotencyKey, requestHash, response, now);
+		return response;
 	}
 
 	/**

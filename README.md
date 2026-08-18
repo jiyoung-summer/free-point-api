@@ -104,7 +104,7 @@ open build/reports/jacoco/test/html/index.html   # 사람이 보는 HTML 리포�
 `point_transaction.point_key`는 서버가 요청마다 새로 발급하는 UUID라 재시도 멱등키로 쓸 수 없다(재시도해도 매번 새 UUID가 나온다). 상태를 바꾸는 5개 엔드포인트(`earn`/`earn cancel`/`use`/`use cancel`/`manual-earn`)가 선택적으로 받는 `Idempotency-Key` 헤더와 `idempotency_key` 테이블로 재시도 멱등성을 보장한다.
 
 - `(user_id, operation_type, idempotency_key)` 3개 컬럼에 DB unique 제약을 걸고, 요청 지문(`request_hash`, SHA-256)과 최초 처리 응답(JSON)을 저장한다. `operation_type`을 포함하는 이유는 클라이언트가 같은 키를 실수로 재사용해도 적립과 사용처럼 서로 다른 작업까지 뒤섞여 막히지 않게 하기 위함이다.
-- 처리 순서: ① `PointAccount` 비관적 락을 먼저 잡는다 → ② `idempotency_key`에서 기존 응답을 조회한다 → ③ 있으면(그리고 `request_hash`가 같으면) 저장된 응답을 그대로 반환한다 → ④ 없으면 평소대로 처리 후 같은 트랜잭션 안에서 응답을 저장한다. 계정 락이 같은 사용자의 동시 요청을 이미 직렬화하므로 별도의 분산 락이 필요 없다.
+- 처리 순서: ① `PointAccount` 비관적 락을 먼저 잡는다 → ② `idempotency_key`에서 기존 응답을 조회한다 → ③ 있으면(그리고 `request_hash`가 같으면) 저장된 응답을 그대로 반환한다 → ④ 없으면 평소대로 처리 후 같은 트랜잭션 안에서 응답을 저장한다. 계정 락이 같은 사용자의 동시 요청을 이미 직렬화하므로 별도의 분산 락이 필요 없다. 이 순서(검증 → 락 → 캐시 조회 → 비즈니스 로직 → 응답 저장)는 `PointService.executeIdempotent(...)` 템플릿 메서드 한 곳에 모여 있다 — 4개 오퍼레이션(`earn`/`earnCancel`/`use`/`useCancel`)은 각자 이 순서를 반복 구현하지 않고 비즈니스 로직만 람다로 넘긴다.
 - 캐시 조회는 정책 검증보다 먼저 한다 — 재시도는 정책이 그 사이 바뀌었더라도 항상 최초 결과를 그대로 돌려줘야 한다.
 - `request_hash`는 요청의 핵심 필드(EARN: `userId/amount/expireDays/memo`, EARN_CANCEL: `earnPointKey`, USE: `userId/orderNo/amount`, USE_CANCEL: `usePointKey/amount`)를 JSON 배열로 직렬화해 해시한다. 같은 키로 다른 내용의 요청이 오면 캐시를 쓰지 않고 `IDEMPOTENCY_KEY_REUSED`(409)로 거절한다. `clientTransactionId`는 이 목록에 의도적으로 포함하지 않는다 — 비즈니스 내용이 아니라 호출자 측 참고값이라, 같은 멱등키로 이 값만 다르게 보내는 재시도까지 "내용이 다른 요청"으로 거절하면 안 되기 때문이다(아래 `clientTransactionId` 절 참고).
 - 저장은 `saveAndFlush()`로 즉시 반영한다 — DB unique 제약 위반은 (정상 경로에서는 계정 락이 이미 막아주지만) `IDEMPOTENCY_KEY_REUSED`로 변환하는 최종 안전망이다.
