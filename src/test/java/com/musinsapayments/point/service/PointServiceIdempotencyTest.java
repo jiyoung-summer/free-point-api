@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.musinsapayments.point.dto.EarnCancelRequest;
 import com.musinsapayments.point.dto.EarnRequest;
 import com.musinsapayments.point.dto.PointEarnResponse;
 import com.musinsapayments.point.dto.PointUseResponse;
@@ -97,8 +98,8 @@ class PointServiceIdempotencyTest {
 		var earned = pointService.earn(new EarnRequest(userId, 1000, null, null));
 		String idempotencyKey = "cancel-retry-key";
 
-		var first = pointService.earnCancel(earned.pointKey(), idempotencyKey);
-		var retried = pointService.earnCancel(earned.pointKey(), idempotencyKey);
+		var first = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(userId), idempotencyKey);
+		var retried = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(userId), idempotencyKey);
 
 		assertThat(retried).isEqualTo(first);
 		assertThat(pointService.getBalance(userId).balance()).isZero();
@@ -124,8 +125,8 @@ class PointServiceIdempotencyTest {
 		var used = pointService.use(new UseRequest(userId, "ORD-1", 400));
 		String idempotencyKey = "use-cancel-retry-key";
 
-		var first = pointService.useCancel(used.pointKey(), new UseCancelRequest(200), idempotencyKey);
-		var retried = pointService.useCancel(used.pointKey(), new UseCancelRequest(200), idempotencyKey);
+		var first = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 200), idempotencyKey);
+		var retried = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 200), idempotencyKey);
 
 		assertThat(retried).isEqualTo(first);
 		assertThat(pointService.getBalance(userId).balance()).isEqualTo(800);
@@ -170,9 +171,9 @@ class PointServiceIdempotencyTest {
 		var earnedB = pointService.earn(new EarnRequest(userId, 500, null, null));
 		String idempotencyKey = "cancel-key";
 
-		pointService.earnCancel(earnedA.pointKey(), idempotencyKey);
+		pointService.earnCancel(earnedA.pointKey(), new EarnCancelRequest(userId), idempotencyKey);
 
-		assertThatThrownBy(() -> pointService.earnCancel(earnedB.pointKey(), idempotencyKey))
+		assertThatThrownBy(() -> pointService.earnCancel(earnedB.pointKey(), new EarnCancelRequest(userId), idempotencyKey))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.IDEMPOTENCY_KEY_REUSED));

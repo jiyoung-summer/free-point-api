@@ -49,9 +49,9 @@ class PointServiceValidationTest {
 		pointService.earn(new EarnRequest(userId, 1000, null, null));
 		var use = pointService.use(new UseRequest(userId, "O-1", 500));
 
-		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(0)))
+		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, 0)))
 				.isInstanceOf(BusinessException.class);
-		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(-50)))
+		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, -50)))
 				.isInstanceOf(BusinessException.class);
 
 		// 잘못된 취소 시도가 잔액에 흔적을 남기면 안 된다.

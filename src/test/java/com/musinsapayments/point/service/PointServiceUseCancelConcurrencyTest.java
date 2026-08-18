@@ -54,7 +54,7 @@ class PointServiceUseCancelConcurrencyTest {
 				ready.countDown();
 				try {
 					start.await();
-					pointService.useCancel(use.pointKey(), new UseCancelRequest(cancelChunk));
+					pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, cancelChunk));
 					successCount.incrementAndGet();
 				} catch (BusinessException e) {
 					rejectedCount.incrementAndGet();

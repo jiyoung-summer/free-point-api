@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.PageRequest;
 
+import com.musinsapayments.point.dto.EarnCancelRequest;
 import com.musinsapayments.point.dto.EarnRequest;
 import com.musinsapayments.point.dto.PointEarnResponse;
 import com.musinsapayments.point.dto.PointLotResponse;
@@ -72,7 +73,7 @@ class PointServiceScenarioTest {
 		((MutableClock) clock).advance(Duration.ofDays(2));
 
 		// 5) C의 사용금액 1200원 중 1100원 부분 사용취소 (pointKey D, 잔액 300 -> 1400).
-		PointUseCancelResponse cancel = pointService.useCancel(use.pointKey(), new UseCancelRequest(1100));
+		PointUseCancelResponse cancel = pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, 1100));
 		assertThat(cancel.balance()).isEqualTo(1400);
 		assertThat(cancel.restorations()).hasSize(2);
 
@@ -90,10 +91,10 @@ class PointServiceScenarioTest {
 		assertThat(bRestoration.originLotId()).isNotNull();
 
 		// C는 이제 1200원 중 100원만 추가로 부분취소할 수 있다.
-		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(101)))
+		assertThatThrownBy(() -> pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, 101)))
 				.isInstanceOf(BusinessException.class);
 
-		PointUseCancelResponse finalCancel = pointService.useCancel(use.pointKey(), new UseCancelRequest(100));
+		PointUseCancelResponse finalCancel = pointService.useCancel(use.pointKey(), new UseCancelRequest(userId, 100));
 		assertThat(finalCancel.canceledAmount()).isEqualTo(100);
 		assertThat(finalCancel.balance()).isEqualTo(1500);
 	}
@@ -123,7 +124,7 @@ class PointServiceScenarioTest {
 		PointEarnResponse earn = pointService.earn(new EarnRequest(userId, 1000, 1, null)); // 1일 만료
 		((MutableClock) clock).advance(Duration.ofDays(2));
 
-		assertThatThrownBy(() -> pointService.earnCancel(earn.pointKey()))
+		assertThatThrownBy(() -> pointService.earnCancel(earn.pointKey(), new EarnCancelRequest(userId)))
 				.isInstanceOf(BusinessException.class);
 
 		// 실패한 취소 시도가 잔액에 흔적을 남기면 안 된다(여전히 만료된 채로 사용 불가 상태일 뿐, 취소된 것도 아님).

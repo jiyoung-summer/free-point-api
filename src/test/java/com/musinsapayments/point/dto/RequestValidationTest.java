@@ -67,8 +67,14 @@ class RequestValidationTest {
 
 	@Test
 	void 사용취소_금액_0과_음수는_검증에_실패한다() {
-		assertThat(validator.validate(new UseCancelRequest(0))).isNotEmpty();
-		assertThat(validator.validate(new UseCancelRequest(-1))).isNotEmpty();
+		assertThat(validator.validate(new UseCancelRequest(1L, 0))).isNotEmpty();
+		assertThat(validator.validate(new UseCancelRequest(1L, -1))).isNotEmpty();
+	}
+
+	@Test
+	void 취소_요청의_userId가_없으면_검증에_실패한다() {
+		assertThat(validator.validate(new UseCancelRequest(null, 1000))).isNotEmpty();
+		assertThat(validator.validate(new EarnCancelRequest(null))).isNotEmpty();
 	}
 
 	@Test
@@ -81,7 +87,7 @@ class RequestValidationTest {
 	void 정상_금액은_검증을_통과한다() {
 		assertThat(validator.validate(new EarnRequest(1L, 1000, null, null))).isEmpty();
 		assertThat(validator.validate(new UseRequest(1L, "A1234", 1000))).isEmpty();
-		assertThat(validator.validate(new UseCancelRequest(1000))).isEmpty();
+		assertThat(validator.validate(new UseCancelRequest(1L, 1000))).isEmpty();
 		assertThat(validator.validate(new AdminGrantRequest(1L, 1000, null, null))).isEmpty();
 	}
 

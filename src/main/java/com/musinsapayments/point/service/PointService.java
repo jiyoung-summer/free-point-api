@@ -29,6 +29,7 @@ import com.musinsapayments.point.domain.PointTransaction;
 import com.musinsapayments.point.domain.PointUseCancelDetail;
 import com.musinsapayments.point.domain.PointUseDetail;
 import com.musinsapayments.point.dto.AdminGrantRequest;
+import com.musinsapayments.point.dto.EarnCancelRequest;
 import com.musinsapayments.point.dto.EarnRequest;
 import com.musinsapayments.point.dto.PointBalanceResponse;
 import com.musinsapayments.point.dto.PointEarnCancelResponse;
@@ -141,16 +142,21 @@ public class PointService {
 	}
 
 	@Transactional
-	public PointEarnCancelResponse earnCancel(String earnPointKey) {
-		return earnCancel(earnPointKey, null);
+	public PointEarnCancelResponse earnCancel(String earnPointKey, EarnCancelRequest request) {
+		return earnCancel(earnPointKey, request, null);
 	}
 
 	@Transactional
-	public PointEarnCancelResponse earnCancel(String earnPointKey, String idempotencyKey) {
+	public PointEarnCancelResponse earnCancel(String earnPointKey, EarnCancelRequest request, String idempotencyKey) {
 		validateIdempotencyKey(idempotencyKey);
 		LocalDateTime now = LocalDateTime.now(clock);
 		PointLot lot = lotRepository.findByPointKey(earnPointKey)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "적립 내역을 찾을 수 없습니다."));
+		if (lot.getUserId() != request.userId()) {
+			// pointKey는 존재하지만 소유자가 다른 경우도 "존재하지 않음"과 동일하게 취급한다 — 다른
+			// 코드/메시지를 쓰면 "이 pointKey는 실제로 존재한다(남의 것일 뿐)"는 사실 자체가 새어나간다.
+			throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "적립 내역을 찾을 수 없습니다.");
+		}
 
 		PointAccount account = resolveAccountForUpdate(lot.getUserId());
 		String requestHash = requestHash(earnPointKey);
@@ -249,6 +255,10 @@ public class PointService {
 		PointTransaction useTxn = transactionRepository.findByPointKey(usePointKey)
 				.filter(t -> t.getTransactionType() == PointTransaction.Type.USE)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "사용 내역을 찾을 수 없습니다."));
+		if (useTxn.getUserId() != request.userId()) {
+			// earnCancel과 같은 이유로 "존재하지 않음"과 동일하게 취급한다(§ earnCancel 주석 참고).
+			throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "사용 내역을 찾을 수 없습니다.");
+		}
 
 		PointAccount account = resolveAccountForUpdate(useTxn.getUserId());
 		String requestHash = requestHash(usePointKey, request.amount());

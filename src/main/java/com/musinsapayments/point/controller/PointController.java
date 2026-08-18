@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.musinsapayments.point.dto.EarnCancelRequest;
 import com.musinsapayments.point.dto.EarnRequest;
 import com.musinsapayments.point.dto.PointBalanceResponse;
 import com.musinsapayments.point.dto.PointEarnCancelResponse;
@@ -70,10 +71,11 @@ public class PointController {
 	}
 
 	@PostMapping("/earn/{pointKey}/cancel")
-	@Operation(summary = "적립 취소", description = "적립분이 한 번도 사용되지 않은 경우에만 취소할 수 있다.")
+	@Operation(summary = "적립 취소", description = "적립분이 한 번도 사용되지 않은 경우에만 취소할 수 있다. "
+			+ "요청 본문의 userId가 pointKey의 실제 소유자와 다르면 존재하지 않는 pointKey와 동일하게(404) 거절된다.")
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "적립 취소 성공"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 pointKey",
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 pointKey이거나 userId가 소유자와 다름",
 					content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 취소되었거나 일부 사용된 적립분",
 					content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -81,9 +83,10 @@ public class PointController {
 	public ApiResponse<PointEarnCancelResponse> cancelEarn(
 			@Parameter(description = "취소할 적립분의 pointKey", example = "b3628ab6-3395-4c36-a4b3-4477da381e7b")
 			@PathVariable String pointKey,
+			@Valid @RequestBody EarnCancelRequest request,
 			@Parameter(description = "재시도 멱등키(선택)")
 			@RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-		return ApiResponse.success(pointService.earnCancel(pointKey, idempotencyKey));
+		return ApiResponse.success(pointService.earnCancel(pointKey, request, idempotencyKey));
 	}
 
 	@PostMapping("/use")

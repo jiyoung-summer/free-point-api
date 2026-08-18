@@ -72,7 +72,9 @@ class PointControllerValidationTest {
 
 	@Test
 	void 존재하지_않는_pointKey로_적립취소하면_HTTP_404를_반환한다() throws Exception {
-		mockMvc.perform(post("/api/v1/points/earn/does-not-exist/cancel"))
+		mockMvc.perform(post("/api/v1/points/earn/does-not-exist/cancel")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"userId\":1}"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.code", is("ENTITY_NOT_FOUND")));
 	}
@@ -127,7 +129,9 @@ class PointControllerValidationTest {
 				.andReturn().getResponse().getContentAsString();
 		String pointKey = JsonPath.read(earnResponse, "$.data.pointKey");
 
-		mockMvc.perform(post("/api/v1/points/earn/" + pointKey + "/cancel"))
+		mockMvc.perform(post("/api/v1/points/earn/" + pointKey + "/cancel")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"userId\":" + userId + "}"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.data.canceledAmount", is(1000)));
@@ -165,10 +169,28 @@ class PointControllerValidationTest {
 
 		mockMvc.perform(post("/api/v1/points/use/" + usePointKey + "/cancel")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"amount\":100}"))
+						.content("{\"userId\":" + userId + ",\"amount\":100}"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.data.balance", is(800)));
+	}
+
+	@Test
+	void 소유자가_아닌_userId로_적립취소를_HTTP로_요청하면_404를_반환한다() throws Exception {
+		long ownerId = System.nanoTime();
+		long strangerId = ownerId + 1;
+		String earnResponse = mockMvc.perform(post("/api/v1/points/earn")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"userId\":" + ownerId + ",\"amount\":1000}"))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		String pointKey = JsonPath.read(earnResponse, "$.data.pointKey");
+
+		mockMvc.perform(post("/api/v1/points/earn/" + pointKey + "/cancel")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"userId\":" + strangerId + "}"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code", is("ENTITY_NOT_FOUND")));
 	}
 
 }
