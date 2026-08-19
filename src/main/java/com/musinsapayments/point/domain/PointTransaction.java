@@ -65,17 +65,11 @@ public class PointTransaction {
 	@Column(length = 30)
 	private String displayCode;
 
-	// 호출자 측 외부 시스템(주문/결제 등)의 거래 ID. 거래 추적을 위해 그대로 보관하는 참고값일 뿐이며,
-	// 재시도 멱등성 판단에는 전혀 관여하지 않는다(그 역할은 IdempotencyKeyRecord가 전담한다).
-	// 값 중복은 정상이라 별도 유니크 제약을 두지 않는다.
-	@Column(length = 100)
-	private String clientTransactionId;
-
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
 	private PointTransaction(long accountId, long userId, Type transactionType, long amount,
-			String orderNo, Long relatedTransactionId, String displayCode, String clientTransactionId, LocalDateTime now) {
+			String orderNo, Long relatedTransactionId, String displayCode, LocalDateTime now) {
 		this.pointKey = UUID.randomUUID().toString();
 		this.accountId = accountId;
 		this.userId = userId;
@@ -84,30 +78,26 @@ public class PointTransaction {
 		this.orderNo = orderNo;
 		this.relatedTransactionId = relatedTransactionId;
 		this.displayCode = displayCode;
-		this.clientTransactionId = clientTransactionId;
 		this.createdAt = now;
 	}
 
-	public static PointTransaction earn(long accountId, long userId, long amount, String displayCode,
-			String clientTransactionId, LocalDateTime now) {
-		return new PointTransaction(accountId, userId, Type.EARN, amount, null, null, displayCode, clientTransactionId, now);
+	public static PointTransaction earn(long accountId, long userId, long amount, String displayCode, LocalDateTime now) {
+		return new PointTransaction(accountId, userId, Type.EARN, amount, null, null, displayCode, now);
 	}
 
 	public static PointTransaction earnCancel(long accountId, long userId, long amount,
-			long relatedTransactionId, String displayCode, String clientTransactionId, LocalDateTime now) {
-		return new PointTransaction(accountId, userId, Type.EARN_CANCEL, amount, null, relatedTransactionId,
-				displayCode, clientTransactionId, now);
+			long relatedTransactionId, String displayCode, LocalDateTime now) {
+		return new PointTransaction(accountId, userId, Type.EARN_CANCEL, amount, null, relatedTransactionId, displayCode, now);
 	}
 
 	public static PointTransaction use(long accountId, long userId, long amount, String orderNo,
-			String displayCode, String clientTransactionId, LocalDateTime now) {
-		return new PointTransaction(accountId, userId, Type.USE, amount, orderNo, null, displayCode, clientTransactionId, now);
+			String displayCode, LocalDateTime now) {
+		return new PointTransaction(accountId, userId, Type.USE, amount, orderNo, null, displayCode, now);
 	}
 
 	public static PointTransaction useCancel(long accountId, long userId, long amount, String orderNo,
-			long relatedTransactionId, String displayCode, String clientTransactionId, LocalDateTime now) {
-		return new PointTransaction(accountId, userId, Type.USE_CANCEL, amount, orderNo, relatedTransactionId,
-				displayCode, clientTransactionId, now);
+			long relatedTransactionId, String displayCode, LocalDateTime now) {
+		return new PointTransaction(accountId, userId, Type.USE_CANCEL, amount, orderNo, relatedTransactionId, displayCode, now);
 	}
 
 }

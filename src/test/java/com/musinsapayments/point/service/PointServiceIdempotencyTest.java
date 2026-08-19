@@ -49,8 +49,8 @@ class PointServiceIdempotencyTest {
 		long userId = System.nanoTime();
 		String idempotencyKey = "retry-key-1";
 
-		PointEarnResponse first = pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey);
-		PointEarnResponse retried = pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey);
+		PointEarnResponse first = pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey);
+		PointEarnResponse retried = pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey);
 
 		assertThat(retried).isEqualTo(first);
 		assertThat(lotRepository.countByUserId(userId)).isEqualTo(1);
@@ -61,8 +61,8 @@ class PointServiceIdempotencyTest {
 	void Idempotency_Key가_다르면_별개의_적립으로_처리된다() {
 		long userId = System.nanoTime();
 
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null), "key-a");
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null), "key-b");
+		pointService.earn(new EarnRequest(userId, 1000, null, null), "key-a");
+		pointService.earn(new EarnRequest(userId, 1000, null, null), "key-b");
 
 		assertThat(lotRepository.countByUserId(userId)).isEqualTo(2);
 		assertThat(pointService.getBalance(userId).balance()).isEqualTo(2000);
@@ -72,8 +72,8 @@ class PointServiceIdempotencyTest {
 	void Idempotency_Key를_보내지_않으면_기존처럼_매번_새로_처리된다() {
 		long userId = System.nanoTime();
 
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
+		pointService.earn(new EarnRequest(userId, 1000, null, null));
+		pointService.earn(new EarnRequest(userId, 1000, null, null));
 
 		assertThat(lotRepository.countByUserId(userId)).isEqualTo(2);
 		assertThat(pointService.getBalance(userId).balance()).isEqualTo(2000);
@@ -85,8 +85,8 @@ class PointServiceIdempotencyTest {
 		long userId2 = userId1 + 1;
 		String sharedKey = "shared-key";
 
-		pointService.earn(new EarnRequest(userId1, 1000, null, null, null), sharedKey);
-		pointService.earn(new EarnRequest(userId2, 500, null, null, null), sharedKey);
+		pointService.earn(new EarnRequest(userId1, 1000, null, null), sharedKey);
+		pointService.earn(new EarnRequest(userId2, 500, null, null), sharedKey);
 
 		assertThat(pointService.getBalance(userId1).balance()).isEqualTo(1000);
 		assertThat(pointService.getBalance(userId2).balance()).isEqualTo(500);
@@ -95,11 +95,11 @@ class PointServiceIdempotencyTest {
 	@Test
 	void 같은_Idempotency_Key로_적립취소를_재시도하면_이미_취소됐다는_예외_없이_동일_응답을_반환한다() {
 		long userId = System.nanoTime();
-		var earned = pointService.earn(new EarnRequest(userId, 1000, null, null, null));
+		var earned = pointService.earn(new EarnRequest(userId, 1000, null, null));
 		String idempotencyKey = "cancel-retry-key";
 
-		var first = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(userId, null), idempotencyKey);
-		var retried = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(userId, null), idempotencyKey);
+		var first = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(userId), idempotencyKey);
+		var retried = pointService.earnCancel(earned.pointKey(), new EarnCancelRequest(userId), idempotencyKey);
 
 		assertThat(retried).isEqualTo(first);
 		assertThat(pointService.getBalance(userId).balance()).isZero();
@@ -108,11 +108,11 @@ class PointServiceIdempotencyTest {
 	@Test
 	void 같은_Idempotency_Key로_사용을_재시도해도_잔액이_중복_차감되지_않는다() {
 		long userId = System.nanoTime();
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
+		pointService.earn(new EarnRequest(userId, 1000, null, null));
 		String idempotencyKey = "use-retry-key";
 
-		PointUseResponse first = pointService.use(new UseRequest(userId, "ORD-1", 300, null), idempotencyKey);
-		PointUseResponse retried = pointService.use(new UseRequest(userId, "ORD-1", 300, null), idempotencyKey);
+		PointUseResponse first = pointService.use(new UseRequest(userId, "ORD-1", 300), idempotencyKey);
+		PointUseResponse retried = pointService.use(new UseRequest(userId, "ORD-1", 300), idempotencyKey);
 
 		assertThat(retried).isEqualTo(first);
 		assertThat(pointService.getBalance(userId).balance()).isEqualTo(700);
@@ -121,12 +121,12 @@ class PointServiceIdempotencyTest {
 	@Test
 	void 같은_Idempotency_Key로_사용취소를_재시도해도_잔액이_중복_복원되지_않는다() {
 		long userId = System.nanoTime();
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null));
-		var used = pointService.use(new UseRequest(userId, "ORD-1", 400, null));
+		pointService.earn(new EarnRequest(userId, 1000, null, null));
+		var used = pointService.use(new UseRequest(userId, "ORD-1", 400));
 		String idempotencyKey = "use-cancel-retry-key";
 
-		var first = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 200, null), idempotencyKey);
-		var retried = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 200, null), idempotencyKey);
+		var first = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 200), idempotencyKey);
+		var retried = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 200), idempotencyKey);
 
 		assertThat(retried).isEqualTo(first);
 		assertThat(pointService.getBalance(userId).balance()).isEqualTo(800);
@@ -139,9 +139,9 @@ class PointServiceIdempotencyTest {
 		long userId = System.nanoTime();
 		String idempotencyKey = "collision-key";
 
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey);
+		pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey);
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, "null", null), idempotencyKey))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, "null"), idempotencyKey))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.IDEMPOTENCY_KEY_REUSED));
@@ -152,9 +152,9 @@ class PointServiceIdempotencyTest {
 		long userId = System.nanoTime();
 		String idempotencyKey = "key-1";
 
-		pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey);
+		pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey);
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 500, null, null, null), idempotencyKey))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 500, null, null), idempotencyKey))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.IDEMPOTENCY_KEY_REUSED));
@@ -167,13 +167,13 @@ class PointServiceIdempotencyTest {
 	@Test
 	void 같은_Idempotency_Key로_서로_다른_적립분을_취소하려_하면_거절되고_B는_취소되지_않는다() {
 		long userId = System.nanoTime();
-		var earnedA = pointService.earn(new EarnRequest(userId, 1000, null, null, null));
-		var earnedB = pointService.earn(new EarnRequest(userId, 500, null, null, null));
+		var earnedA = pointService.earn(new EarnRequest(userId, 1000, null, null));
+		var earnedB = pointService.earn(new EarnRequest(userId, 500, null, null));
 		String idempotencyKey = "cancel-key";
 
-		pointService.earnCancel(earnedA.pointKey(), new EarnCancelRequest(userId, null), idempotencyKey);
+		pointService.earnCancel(earnedA.pointKey(), new EarnCancelRequest(userId), idempotencyKey);
 
-		assertThatThrownBy(() -> pointService.earnCancel(earnedB.pointKey(), new EarnCancelRequest(userId, null), idempotencyKey))
+		assertThatThrownBy(() -> pointService.earnCancel(earnedB.pointKey(), new EarnCancelRequest(userId), idempotencyKey))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.IDEMPOTENCY_KEY_REUSED));
@@ -186,7 +186,7 @@ class PointServiceIdempotencyTest {
 	void 공백_Idempotency_Key는_거절되고_적립도_처리되지_않는다() {
 		long userId = System.nanoTime();
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null, null), "   "))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null), "   "))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.INVALID_INPUT_VALUE));
@@ -199,7 +199,7 @@ class PointServiceIdempotencyTest {
 		long userId = System.nanoTime();
 		String tooLong = "a".repeat(201);
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null, null), tooLong))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null), tooLong))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.INVALID_INPUT_VALUE));
@@ -211,7 +211,7 @@ class PointServiceIdempotencyTest {
 	void 제어_문자를_포함한_Idempotency_Key는_거절된다() {
 		long userId = System.nanoTime();
 
-		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null, null), "key-1\n"))
+		assertThatThrownBy(() -> pointService.earn(new EarnRequest(userId, 1000, null, null), "key-1\n"))
 				.isInstanceOf(BusinessException.class)
 				.satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
 						.isEqualTo(ErrorCode.INVALID_INPUT_VALUE));
@@ -224,7 +224,7 @@ class PointServiceIdempotencyTest {
 		long userId = System.nanoTime();
 		String exactly200 = "a".repeat(200);
 
-		var response = pointService.earn(new EarnRequest(userId, 1000, null, null, null), exactly200);
+		var response = pointService.earn(new EarnRequest(userId, 1000, null, null), exactly200);
 
 		assertThat(response.amount()).isEqualTo(1000);
 	}
@@ -247,7 +247,7 @@ class PointServiceIdempotencyTest {
 				ready.countDown();
 				try {
 					start.await();
-					responses.add(pointService.earn(new EarnRequest(userId, 1000, null, null, null), idempotencyKey));
+					responses.add(pointService.earn(new EarnRequest(userId, 1000, null, null), idempotencyKey));
 				} catch (Throwable t) {
 					failures.add(t);
 				} finally {

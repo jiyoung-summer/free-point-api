@@ -14,9 +14,6 @@ public record PointEarnCancelResponse(
 		long canceledAmount,
 
 		@Schema(description = "취소 후 총 잔액")
-		long balance,
-
-		@Schema(description = "호출자 측 외부 시스템의 거래 ID (선택, 추적용)")
-		String clientTransactionId
+		long balance
 ) {
 }

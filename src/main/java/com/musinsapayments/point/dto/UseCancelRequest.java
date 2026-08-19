@@ -3,7 +3,6 @@ package com.musinsapayments.point.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 
 @Schema(description = "사용 취소 요청 (전체/부분 취소 가능)")
 public record UseCancelRequest(
@@ -11,9 +10,6 @@ public record UseCancelRequest(
 		@NotNull Long userId,
 
 		@Schema(description = "취소 금액 (취소 가능 잔여 금액 이하)", example = "1100")
-		@Positive long amount,
-
-		@Schema(description = "호출자 측 외부 시스템의 거래 ID(선택). 거래 추적 참고용으로만 저장되며 멱등성 처리에는 관여하지 않는다.", example = "CANCEL-SYS-88231")
-		@Size(max = 100) String clientTransactionId
+		@Positive long amount
 ) {
 }

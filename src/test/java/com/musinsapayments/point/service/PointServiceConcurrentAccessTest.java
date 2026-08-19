@@ -40,7 +40,7 @@ class PointServiceConcurrentAccessTest {
 		long useAmount = 1000;
 		int totalThreads = earnThreads + useThreads;
 
-		pointService.earn(new EarnRequest(userId, seedBalance, null, null, null));
+		pointService.earn(new EarnRequest(userId, seedBalance, null, null));
 
 		ExecutorService executor = Executors.newFixedThreadPool(totalThreads);
 		CountDownLatch ready = new CountDownLatch(totalThreads);
@@ -54,7 +54,7 @@ class PointServiceConcurrentAccessTest {
 				ready.countDown();
 				try {
 					start.await();
-					pointService.earn(new EarnRequest(userId, earnAmount, null, null, null));
+					pointService.earn(new EarnRequest(userId, earnAmount, null, null));
 				} catch (Throwable t) {
 					failures.add(t);
 				} finally {
@@ -67,7 +67,7 @@ class PointServiceConcurrentAccessTest {
 				ready.countDown();
 				try {
 					start.await();
-					pointService.use(new UseRequest(userId, "ORDER-" + orderSeq.incrementAndGet(), useAmount, null));
+					pointService.use(new UseRequest(userId, "ORDER-" + orderSeq.incrementAndGet(), useAmount));
 				} catch (Throwable t) {
 					failures.add(t);
 				} finally {
@@ -95,7 +95,7 @@ class PointServiceConcurrentAccessTest {
 		long useAmount = 1_000;
 		int threadCount = 10; // 요청 총합 10,000 > 잔액 5,000 → 정확히 5건만 성공해야 한다
 
-		pointService.earn(new EarnRequest(userId, seedBalance, null, null, null));
+		pointService.earn(new EarnRequest(userId, seedBalance, null, null));
 
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 		CountDownLatch ready = new CountDownLatch(threadCount);
@@ -111,7 +111,7 @@ class PointServiceConcurrentAccessTest {
 				ready.countDown();
 				try {
 					start.await();
-					pointService.use(new UseRequest(userId, "ORDER-" + orderSeq.incrementAndGet(), useAmount, null));
+					pointService.use(new UseRequest(userId, "ORDER-" + orderSeq.incrementAndGet(), useAmount));
 					successCount.incrementAndGet();
 				} catch (BusinessException e) {
 					insufficientBalanceCount.incrementAndGet();

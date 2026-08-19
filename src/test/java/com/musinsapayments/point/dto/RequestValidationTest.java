@@ -37,7 +37,7 @@ class RequestValidationTest {
 	@Test
 	void 적립_금액_0은_검증에_실패한다() {
 		Set<ConstraintViolation<EarnRequest>> violations =
-				validator.validate(new EarnRequest(1L, 0, null, null, null));
+				validator.validate(new EarnRequest(1L, 0, null, null));
 
 		assertThat(violations).isNotEmpty();
 	}
@@ -45,7 +45,7 @@ class RequestValidationTest {
 	@Test
 	void 적립_금액_음수는_검증에_실패한다() {
 		Set<ConstraintViolation<EarnRequest>> violations =
-				validator.validate(new EarnRequest(1L, -1000, null, null, null));
+				validator.validate(new EarnRequest(1L, -1000, null, null));
 
 		assertThat(violations).isNotEmpty();
 	}
@@ -54,27 +54,27 @@ class RequestValidationTest {
 	void 적립_금액_Long_MAX_VALUE는_Positive_검증만으로는_걸러지지_않는다() {
 		// @Positive는 상한이 없다 — 실제 상한은 PointPolicy.validateEarnAmount / MAX_REALISTIC_AMOUNT가 담당한다.
 		Set<ConstraintViolation<EarnRequest>> violations =
-				validator.validate(new EarnRequest(1L, Long.MAX_VALUE, null, null, null));
+				validator.validate(new EarnRequest(1L, Long.MAX_VALUE, null, null));
 
 		assertThat(violations).isEmpty();
 	}
 
 	@Test
 	void 사용_금액_0과_음수는_검증에_실패한다() {
-		assertThat(validator.validate(new UseRequest(1L, "A1234", 0, null))).isNotEmpty();
-		assertThat(validator.validate(new UseRequest(1L, "A1234", -1, null))).isNotEmpty();
+		assertThat(validator.validate(new UseRequest(1L, "A1234", 0))).isNotEmpty();
+		assertThat(validator.validate(new UseRequest(1L, "A1234", -1))).isNotEmpty();
 	}
 
 	@Test
 	void 사용취소_금액_0과_음수는_검증에_실패한다() {
-		assertThat(validator.validate(new UseCancelRequest(1L, 0, null))).isNotEmpty();
-		assertThat(validator.validate(new UseCancelRequest(1L, -1, null))).isNotEmpty();
+		assertThat(validator.validate(new UseCancelRequest(1L, 0))).isNotEmpty();
+		assertThat(validator.validate(new UseCancelRequest(1L, -1))).isNotEmpty();
 	}
 
 	@Test
 	void 취소_요청의_userId가_없으면_검증에_실패한다() {
-		assertThat(validator.validate(new UseCancelRequest(null, 1000, null))).isNotEmpty();
-		assertThat(validator.validate(new EarnCancelRequest(null, null))).isNotEmpty();
+		assertThat(validator.validate(new UseCancelRequest(null, 1000))).isNotEmpty();
+		assertThat(validator.validate(new EarnCancelRequest(null))).isNotEmpty();
 	}
 
 	@Test
@@ -85,27 +85,10 @@ class RequestValidationTest {
 
 	@Test
 	void 정상_금액은_검증을_통과한다() {
-		assertThat(validator.validate(new EarnRequest(1L, 1000, null, null, null))).isEmpty();
-		assertThat(validator.validate(new UseRequest(1L, "A1234", 1000, null))).isEmpty();
-		assertThat(validator.validate(new UseCancelRequest(1L, 1000, null))).isEmpty();
+		assertThat(validator.validate(new EarnRequest(1L, 1000, null, null))).isEmpty();
+		assertThat(validator.validate(new UseRequest(1L, "A1234", 1000))).isEmpty();
+		assertThat(validator.validate(new UseCancelRequest(1L, 1000))).isEmpty();
 		assertThat(validator.validate(new AdminGrantRequest(1L, 1000, null, null))).isEmpty();
-	}
-
-	@Test
-	void clientTransactionId가_100자면_검증을_통과하고_101자면_실패한다() {
-		String exactly100 = "a".repeat(100);
-		String tooLong = "a".repeat(101);
-
-		assertThat(validator.validate(new EarnRequest(1L, 1000, null, null, exactly100))).isEmpty();
-		assertThat(validator.validate(new EarnRequest(1L, 1000, null, null, tooLong))).isNotEmpty();
-	}
-
-	@Test
-	void clientTransactionId를_생략해도_검증을_통과한다() {
-		assertThat(validator.validate(new EarnRequest(1L, 1000, null, null, null))).isEmpty();
-		assertThat(validator.validate(new UseRequest(1L, "A1234", 1000, null))).isEmpty();
-		assertThat(validator.validate(new EarnCancelRequest(1L, null))).isEmpty();
-		assertThat(validator.validate(new UseCancelRequest(1L, 1000, null))).isEmpty();
 	}
 
 }

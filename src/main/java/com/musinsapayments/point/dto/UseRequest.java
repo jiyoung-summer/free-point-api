@@ -15,9 +15,6 @@ public record UseRequest(
 		@NotBlank @Size(max = 50) String orderNo,
 
 		@Schema(description = "사용 금액", example = "1200")
-		@Positive long amount,
-
-		@Schema(description = "호출자 측 외부 시스템의 거래 ID(선택). 거래 추적 참고용으로만 저장되며 멱등성 처리에는 관여하지 않는다.", example = "ORDER-SYS-88231")
-		@Size(max = 100) String clientTransactionId
+		@Positive long amount
 ) {
 }

@@ -86,8 +86,8 @@ public class PointService {
 
 	@Transactional
 	public PointEarnResponse earn(EarnRequest request, String idempotencyKey) {
-		return earn(request.userId(), request.amount(), request.expireDays(), request.memo(), request.clientTransactionId(),
-				PointLot.EarnSource.ORDER, IdempotencyKeyRecord.OperationType.EARN, idempotencyKey);
+		return earn(request.userId(), request.amount(), request.expireDays(), request.memo(), PointLot.EarnSource.ORDER,
+				IdempotencyKeyRecord.OperationType.EARN, idempotencyKey);
 	}
 
 	@Transactional
@@ -97,13 +97,12 @@ public class PointService {
 
 	@Transactional
 	public PointEarnResponse manualEarn(AdminGrantRequest request, String idempotencyKey) {
-		// 관리자 수기 지급은 clientTransactionId 지원 범위 밖이다 — AdminGrantRequest에 해당 필드가 없다.
-		return earn(request.userId(), request.amount(), request.expireDays(), request.memo(), null, PointLot.EarnSource.MANUAL,
+		return earn(request.userId(), request.amount(), request.expireDays(), request.memo(), PointLot.EarnSource.MANUAL,
 				IdempotencyKeyRecord.OperationType.MANUAL_EARN, idempotencyKey);
 	}
 
-	private PointEarnResponse earn(Long userId, long amount, Integer expireDays, String memo, String clientTransactionId,
-			PointLot.EarnSource source, IdempotencyKeyRecord.OperationType operationType, String idempotencyKey) {
+	private PointEarnResponse earn(Long userId, long amount, Integer expireDays, String memo, PointLot.EarnSource source,
+			IdempotencyKeyRecord.OperationType operationType, String idempotencyKey) {
 		LocalDateTime now = LocalDateTime.now(clock);
 
 		return executeIdempotent(userId, operationType, idempotencyKey,
@@ -116,7 +115,7 @@ public class PointService {
 
 					LocalDateTime expireAt = now.plusDays(policy.resolveExpireDays(expireDays));
 
-					PointTransaction txn = PointTransaction.earn(account.getId(), userId, amount, memo, clientTransactionId, now);
+					PointTransaction txn = PointTransaction.earn(account.getId(), userId, amount, memo, now);
 					transactionRepository.save(txn);
 
 					int priority = source == PointLot.EarnSource.MANUAL ? MANUAL_USE_PRIORITY : NORMAL_USE_PRIORITY;
@@ -125,7 +124,7 @@ public class PointService {
 					lotRepository.save(lot);
 
 					return new PointEarnResponse(txn.getPointKey(), lot.getId(), amount, expireAt,
-							source == PointLot.EarnSource.MANUAL, projectedBalance, txn.getClientTransactionId());
+							source == PointLot.EarnSource.MANUAL, projectedBalance);
 				});
 	}
 
@@ -151,12 +150,11 @@ public class PointService {
 					lot.cancelEarn(now);
 
 					PointTransaction txn = PointTransaction.earnCancel(account.getId(), lot.getUserId(), canceledAmount,
-							lot.getEarnTransactionId(), null, request.clientTransactionId(), now);
+							lot.getEarnTransactionId(), null, now);
 					transactionRepository.save(txn);
 
 					long balance = lotRepository.sumBalance(lot.getUserId(), PointLot.Status.ACTIVE, now);
-					return new PointEarnCancelResponse(txn.getPointKey(), earnPointKey, canceledAmount, balance,
-							txn.getClientTransactionId());
+					return new PointEarnCancelResponse(txn.getPointKey(), earnPointKey, canceledAmount, balance);
 				});
 	}
 
@@ -181,7 +179,7 @@ public class PointService {
 					}
 
 					PointTransaction txn = PointTransaction.use(account.getId(), request.userId(), request.amount(),
-							request.orderNo(), null, request.clientTransactionId(), now);
+							request.orderNo(), null, now);
 					transactionRepository.save(txn);
 
 					List<PointUseResponse.Allocation> allocations = new ArrayList<>();
@@ -202,8 +200,7 @@ public class PointService {
 					}
 
 					long balance = lotRepository.sumBalance(request.userId(), PointLot.Status.ACTIVE, now);
-					return new PointUseResponse(txn.getPointKey(), request.orderNo(), request.amount(), balance,
-							allocations, txn.getClientTransactionId());
+					return new PointUseResponse(txn.getPointKey(), request.orderNo(), request.amount(), balance, allocations);
 				});
 	}
 
@@ -237,7 +234,7 @@ public class PointService {
 					}
 
 					PointTransaction cancelTxn = PointTransaction.useCancel(account.getId(), useTxn.getUserId(),
-							request.amount(), useTxn.getOrderNo(), useTxn.getId(), null, request.clientTransactionId(), now);
+							request.amount(), useTxn.getOrderNo(), useTxn.getId(), null, now);
 					transactionRepository.save(cancelTxn);
 
 					// details 개수만큼 findById를 반복하면 N+1이 된다 — 대상 lot을 한 번에 모아서 가져온다.
@@ -262,8 +259,7 @@ public class PointService {
 					}
 
 					long balance = lotRepository.sumBalance(useTxn.getUserId(), PointLot.Status.ACTIVE, now);
-					return new PointUseCancelResponse(cancelTxn.getPointKey(), request.amount(), balance,
-							restorations, cancelTxn.getClientTransactionId());
+					return new PointUseCancelResponse(cancelTxn.getPointKey(), request.amount(), balance, restorations);
 				});
 	}
 
@@ -285,8 +281,7 @@ public class PointService {
 	public PageResponse<PointTransactionResponse> getTransactions(Long userId, Pageable pageable) {
 		Page<PointTransactionResponse> page = transactionRepository.findByUserId(userId, pageable)
 				.map(txn -> new PointTransactionResponse(txn.getPointKey(), txn.getTransactionType().name(),
-						txn.getAmount(), txn.getOrderNo(), txn.getRelatedTransactionId(), txn.getClientTransactionId(),
-						txn.getCreatedAt()));
+						txn.getAmount(), txn.getOrderNo(), txn.getRelatedTransactionId(), txn.getCreatedAt()));
 		return PageResponse.from(page);
 	}
 
@@ -305,9 +300,8 @@ public class PointService {
 		}
 
 		LocalDateTime reissueExpireAt = now.plusDays(policy.resolveExpireDays(null));
-		// 재적립은 시스템이 내부적으로 발생시키는 거래라 호출자가 지정한 clientTransactionId가 없다.
 		PointTransaction reissueTxn = PointTransaction.earn(cancelTxn.getAccountId(), cancelTxn.getUserId(),
-				amount, "USE_CANCEL_REISSUE", null, now);
+				amount, "USE_CANCEL_REISSUE", now);
 		transactionRepository.save(reissueTxn);
 
 		PointLot reissuedLot = PointLot.reissue(reissueTxn.getPointKey(), cancelTxn.getUserId(), reissueTxn.getId(),

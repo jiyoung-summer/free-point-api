@@ -62,7 +62,7 @@ class PointAccountProvisionerConcurrencyTest {
 				ready.countDown();
 				try {
 					start.await();
-					var response = pointService.earn(new EarnRequest(userId, earnAmount, null, null, null));
+					var response = pointService.earn(new EarnRequest(userId, earnAmount, null, null));
 					succeededPointKeys.add(response.pointKey());
 				} catch (Throwable t) {
 					failures.add(t);
