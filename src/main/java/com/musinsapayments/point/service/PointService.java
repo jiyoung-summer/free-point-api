@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -299,7 +300,11 @@ public class PointService {
 			return new PointUseCancelResponse.Restoration(originLot.getId(), amount, false, null);
 		}
 
-		LocalDateTime reissueExpireAt = now.plusDays(policy.resolveExpireDays(null));
+		// 재적립은 새로운 만료일 "요청"이 아니라 원래 부여받았던 혜택의 복원이다 — 원 적립분이
+		// 실제로 확정받았던 만료일수(createdAt~expireAt 간격)를 그대로 재적용하고, 그 사이 정책
+		// min/max 범위가 바뀌었더라도 재검증하지 않는다.
+		Duration originalGrantDuration = Duration.between(originLot.getCreatedAt(), originLot.getExpireAt());
+		LocalDateTime reissueExpireAt = now.plus(originalGrantDuration);
 		PointTransaction reissueTxn = PointTransaction.earn(cancelTxn.getAccountId(), cancelTxn.getUserId(),
 				amount, "USE_CANCEL_REISSUE", now);
 		transactionRepository.save(reissueTxn);

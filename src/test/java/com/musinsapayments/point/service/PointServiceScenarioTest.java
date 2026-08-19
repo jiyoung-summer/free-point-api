@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.PageRequest;
 
+import com.musinsapayments.point.domain.PointLot;
 import com.musinsapayments.point.dto.EarnCancelRequest;
 import com.musinsapayments.point.dto.EarnRequest;
 import com.musinsapayments.point.dto.PointEarnResponse;
@@ -24,6 +26,7 @@ import com.musinsapayments.point.dto.PointUseResponse;
 import com.musinsapayments.point.dto.UseCancelRequest;
 import com.musinsapayments.point.dto.UseRequest;
 import com.musinsapayments.point.global.exception.BusinessException;
+import com.musinsapayments.point.repository.PointLotRepository;
 import com.musinsapayments.point.support.MutableClock;
 
 /**
@@ -44,6 +47,9 @@ class PointServiceScenarioTest {
 
 	@Autowired
 	private PointService pointService;
+
+	@Autowired
+	private PointLotRepository lotRepository;
 
 	@Autowired
 	private Clock clock;
@@ -129,6 +135,35 @@ class PointServiceScenarioTest {
 
 		// 실패한 취소 시도가 잔액에 흔적을 남기면 안 된다(여전히 만료된 채로 사용 불가 상태일 뿐, 취소된 것도 아님).
 		assertThat(pointService.getBalance(userId).balance()).isZero();
+	}
+
+	@Test
+	void 만료된_적립분의_사용취소_재적립은_정책_기본값이_아니라_원_적립_요청_일수를_재사용한다() {
+		long userId = 7L;
+		int requestedExpireDays = 5; // 정책 기본값(365일)과 확실히 다른 값
+
+		// 5일 만료로 적립 → 사용 → 6일 경과(만료) → 사용취소로 재적립 유도.
+		pointService.earn(new EarnRequest(userId, 1000, requestedExpireDays, null));
+		PointUseResponse used = pointService.use(new UseRequest(userId, "O-1", 1000));
+		((MutableClock) clock).advance(Duration.ofDays(6));
+
+		LocalDateTime cancelNow = LocalDateTime.now(clock);
+		PointUseCancelResponse cancel = pointService.useCancel(used.pointKey(), new UseCancelRequest(userId, 1000));
+
+		assertThat(cancel.restorations()).hasSize(1);
+		PointUseCancelResponse.Restoration restoration = cancel.restorations().get(0);
+		assertThat(restoration.reissued()).isTrue();
+
+		PointLot reissuedLot = lotRepository.findByPointKey(restoration.reissuedPointKey()).orElseThrow();
+		LocalDateTime expectedExpireAt = cancelNow.plusDays(requestedExpireDays);
+		LocalDateTime policyDefaultExpireAt = cancelNow.plusDays(365);
+
+		assertThat(reissuedLot.getExpireAt())
+				.as("재적립 만료일은 원래 요청했던 %d일 기준이어야 한다", requestedExpireDays)
+				.isEqualTo(expectedExpireAt);
+		assertThat(reissuedLot.getExpireAt())
+				.as("정책 기본값(365일)으로 리셋되면 안 된다")
+				.isNotEqualTo(policyDefaultExpireAt);
 	}
 
 }

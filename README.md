@@ -47,7 +47,7 @@ java -jar build/libs/free-point-api-0.0.1-SNAPSHOT.jar
 | `PageableSupportTest` | `size` 상한 clamp, `page`/`sort`는 그대로 유지 |
 | `PointControllerPaginationTest` | HTTP 레벨 `size` 상한 clamp, 음수 `page` 방어, 화이트리스트 밖 정렬 필드 400 |
 | `PointControllerExplicitPageSizeCapTest` | 전역 설정과 무관하게 컨트롤러 명시 상한이 독립적으로 적용되는지 |
-| `PointServiceScenarioTest` | 요구사항 예시 시나리오(A–E) 전체 재현, 조회 응답의 `usable`/`expired` 필드, 만료된 미사용 적립의 취소 거절 |
+| `PointServiceScenarioTest` | 요구사항 예시 시나리오(A–E) 전체 재현, 조회 응답의 `usable`/`expired` 필드, 만료된 미사용 적립의 취소 거절, 만료 적립분 재적립 시 정책 기본값이 아니라 원 적립 요청 만료일수를 재사용하는지 |
 | `PointServiceConcurrentAccessTest` | 동시 적립/사용에서 lost update 없음, 잔액을 초과하는 동시 사용 요청이 몰려도 감당 가능한 건수만 성공 |
 | `PointServiceUseCancelConcurrencyTest` | 같은 사용 거래에 부분 사용취소가 동시에 몰려도 취소 가능 금액을 넘지 않음 |
 | `PointLotUsableConditionTest` | `USABLE_CONDITION`이 빠지면 즉시 실패하는 회귀 테스트 |
@@ -206,7 +206,7 @@ SELECT COALESCE(SUM(remaining_amount), 0) FROM point_lot
 | 사용: 주문 시에만, 주문번호 기록 | `UseRequest.orderNo`(필수), `PointUseDetail.orderNo` |
 | 사용: 수기지급 우선 + 만료임박 순 | `PointLotRepository.findUsableLotsForAllocation` — `use_priority asc, expire_at asc, id asc` |
 | 사용취소: 전체/부분 | `PointUseDetail.cancelableAmount()`/`cancel()` — 반복 부분취소 가능 |
-| 사용취소 시 만료 적립분 → 신규 적립 | `PointService.restoreAllocation()` — 만료 안 됐으면 원본 lot에 직접 복원, 만료됐으면 새 `EARN` 거래 + 새 lot으로 재발급(`origin_lot_id`로 원본 추적) |
+| 사용취소 시 만료 적립분 → 신규 적립 | `PointService.restoreAllocation()` — 만료 안 됐으면 원본 lot에 직접 복원, 만료됐으면 새 `EARN` 거래 + 새 lot으로 재발급(`origin_lot_id`로 원본 추적). 재발급 lot의 만료일은 정책 기본값이 아니라 원 적립분이 실제로 부여받았던 만료일수(`createdAt`~`expireAt` 간격)를 그대로 재적용하며, 그 사이 정책 min/max 범위가 바뀌었어도 재검증하지 않는다 — 새로운 요청이 아니라 원래 혜택의 복원이기 때문이다. |
 
 ---
 
