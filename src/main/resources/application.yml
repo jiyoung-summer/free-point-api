@@ -51,5 +51,9 @@ springdoc:
     path: /v3/api-docs
 
 logging:
+  pattern:
+    # %X{traceId} : TraceIdFilter가 MDC에 심어둔 요청 단위 상관관계 ID. 요청 밖(기동 시 로그 등)에는
+    # MDC 값이 없으므로 :-no-trace 기본값을 쓴다 — 빈 대괄호로 보이지 않게.
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%15.15t] [%X{traceId:-no-trace}] %-40.40logger{39} : %m%n%wEx"
   level:
     org.hibernate.SQL: debug

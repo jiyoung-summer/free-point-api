@@ -61,6 +61,7 @@ java -jar build/libs/free-point-api-0.0.1-SNAPSHOT.jar
 | `SchemaIndexTest` | 핵심 인덱스가 실제 실행 스키마에 존재하는지 |
 | `OpenApiSortParamTest` | `sort` 쿼리 파라미터가 JSON `content`가 아니라 평범한 배열 스키마로 문서화되는지(Swagger UI에서 `sort` 입력 시 실제로 재현·확인한 문제) |
 | `PointApiApplicationTests` | Spring 컨텍스트 정상 기동 |
+| `TraceIdFilterTest` | 요청마다 `traceId`가 MDC에 설정되고 응답 헤더로도 내려가는지, 요청 종료 후 MDC에서 제거되는지, 서로 다른 요청은 다른 값을 받는지, 상위 계층이 보낸 `X-Trace-Id`(공백 제외)는 그대로 이어받는지 |
 
 만료 시나리오는 `Clock`을 빈으로 분리(`ClockConfig`)하고 테스트에서 `MutableClock`으로 교체해, `Thread.sleep` 없이 시간을 앞당겨 검증한다. 동시성 테스트는 `Thread.sleep` 기반 타이밍 대신 `CountDownLatch`로 여러 스레드를 같은 순간에 출발시켜 실제 경쟁 상태를 재현한다.
 
@@ -158,6 +159,14 @@ curl -s -X POST $BASE/points/earn/{pointKey}/cancel -H 'Content-Type: applicatio
 500(서버 오류)은 원인별로 코드를 분리했다 — `ACCOUNT_PROVISIONING_FAILED`(계정 조회/생성 실패), `IDEMPOTENCY_CODEC_FAILED`(멱등 응답 JSON 직렬화/역직렬화 실패), `POLICY_NOT_CONFIGURED`(적용 가능한 정책 없음), 나머지 예상 못한 예외는 `INTERNAL_SERVER_ERROR`. 클라이언트에 보이는 메시지는 여전히 일반적이지만(내부 구현 용어 노출 방지), 이 코드들과 서버 로그(`GlobalExceptionHandler`가 5xx만 스택트레이스와 함께 `ERROR` 레벨로 남긴다 — 4xx는 정상 트래픽이라 로그를 남기지 않는다)로 운영 중 원인을 구분할 수 있다.
 
 예외 경로 외에도 운영 중 신호가 필요한 지점에는 로그를 남긴다: 기동 시 기본 정책 시딩 여부(`PointPolicyInitializer`, `INFO`), 신규 계정 생성 경합이 감지·처리된 경우(`PointService.resolveAccountForUpdate`, `DEBUG`), idempotency UK 충돌이 실제로 발생한 경우(`PointService.saveIdempotentResponseIfPresent`, `WARN` — 계정 락으로 이미 막혔어야 할 경쟁이라 발생 자체가 이상 신호). 마지막 것은 응답이 4xx(`IDEMPOTENCY_KEY_REUSED`)라 `GlobalExceptionHandler`의 5xx 자동 로깅을 타지 않으므로 별도로 남긴다.
+
+### 요청 상관관계 — `traceId`
+
+`TraceIdFilter`가 모든 요청 시작 시 `traceId`를 발급해 SLF4J MDC에 심어두고, 요청이 끝나면 제거한다(스레드 풀 재사용 환경에서 다음 요청으로 값이 새어나가지 않게 하기 위함). 로그 패턴(`logging.pattern.console`)에 `%X{traceId}`를 포함시켜, 같은 요청에 속한 로그 줄(컨트롤러 진입부터 Hibernate SQL까지)을 하나의 값으로 묶어볼 수 있다.
+
+- 상위 계층(API Gateway 등)이 이미 `X-Trace-Id` 헤더를 보냈다면 새로 발급하지 않고 그대로 이어받는다 — 이 서비스 안에서 상관관계가 끊기지 않는다.
+- 응답에도 `X-Trace-Id` 헤더로 값을 내려준다. 장애 문의 시 클라이언트가 이 값을 알려주면 로그에서 바로 검색할 수 있다.
+- 요청 밖(기동 시 로그 등)에는 MDC 값이 없어 `no-trace`로 표시된다.
 
 ---
 
